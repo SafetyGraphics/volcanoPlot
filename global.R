@@ -20,8 +20,10 @@ library(survival) # version: 3.1-8
 library(survminer) # version: 0.4.6
 library(fmsb) # version: 0.7.0
 
+# if function conflicts, default dplyr
 conflict_prefer("first", "dplyr")
-conflict_prefer("filter", "dplyr")
+select <- dplyr::select; rename <- dplyr::rename; mutate <- dplyr::mutate; summarize <- dplyr::summarize; arrange <- dplyr::arrange; slice <- dplyr::slice; filter <- dplyr::filter; recode<-dplyr::recode
+style <- plotly::style
 # conflict_prefer("layout", "plotly")
 # conflict_prefer("hidden", "shinyjs")
 # conflict_prefer("dataTableOutput", "DT")
