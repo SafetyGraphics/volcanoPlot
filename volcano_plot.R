@@ -171,9 +171,9 @@ volcano.plot <- function(data,
   }
   if (test == "Risk Difference") {x_L <- X_ref - 1; x_U <- X_ref + 1}
   
-  p <- ggplot(statistics_data, aes(TEST, pvalue, label = Summary, color = AEBODSYS, key = key)) + 
+  p <- ggplot(statistics_data, aes(TEST, pvalue, label = Summary, fill = AEBODSYS, key = key)) + 
     # geom_point() + 
-    geom_point(size = pt_size$N3) + 
+    geom_point(size = pt_size$N3, pch=21, alpha=0.8) + 
     geom_hline(aes(yintercept = Y_ref), color = 'grey30', linetype = "dotted") +
     geom_vline(aes(xintercept = X_ref), color = 'grey30', linetype = "dotted") +
     theme_bw() +

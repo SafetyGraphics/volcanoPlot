@@ -18,7 +18,8 @@ server <- function(input, output, session) {
     # SDTM
     file <- input$file_ae_test
     if (is.null(file)) return()
-    df <- fread(input$file_ae_test$datapath)
+    df <- fread(input$file_ae_test$datapath)%>% as.data.frame() %>%
+      mutate(AESTDT = as.Date(AESTDT), AEENDT = as.Date(AEENDT), RFSTDTC = as.Date(RFSTDTC), RFENDTC = as.Date(RFENDTC))
   })
   
   statistics_data <- reactive({
@@ -484,7 +485,7 @@ server <- function(input, output, session) {
   ### Definition of 'Reset' button UI output and its consequent triggerings ----
   output$reset_UI <- renderUI({
     req(data$ae_test)
-    actionBttn("reset", "Reset",color = "primary",style = "bordered",block=TRUE)
+    actionBttn("reset", "Reset Options",color = "primary",style = "bordered",block=TRUE)
   })
   
   observeEvent(input$reset, {
@@ -637,7 +638,7 @@ server <- function(input, output, session) {
         subgroup_vals = input$subgroup_vals,
         X_ref = as.numeric(input$X_ref),
         Y_ref = as.numeric(input$Y_ref),
-        X_label = paste(input$test, input$treatment1_label, "vs", input$treatment2_label),
+        X_label = paste(input$test, input$treatment1_label, "vs.", input$treatment2_label),
         review_by = input$review_by,
         summary_by = input$summary_by,
         pvalue_option = input$pvalue_option)
@@ -688,24 +689,27 @@ server <- function(input, output, session) {
         plots$volcano_plot <- out$plot  
         plots$volcano_plot_data <- out$data
         output$volcano_plot <- renderPlotly({
-          ggplotly(plots$volcano_plot,tooltip = c("label")) %>%
+          output = ggplotly(plots$volcano_plot,tooltip = c("label")) %>%
             plotly::layout(annotations = 
               list(x = 0, y = 0.02, text = text1, 
                    showarrow = F, xref = 'paper', yref = 'paper', 
                    xanchor = 'left', yanchor = 'bottom', xshift = 0, yshift = 0,
-                   font = list(size = 15, color = "blue"))) %>% 
+                   font = list(size = 12, color = "blue"))) %>% 
             plotly::layout(annotations = 
               list(x = .95, y = 0.02, text = text2, 
                    showarrow = F, xref = 'paper', yref = 'paper', 
                    xanchor = 'right', yanchor = 'bottom', xshift = 0, yshift = 0,
-                   font = list(size = 15, color = "blue")))
+                   font = list(size = 12, color = "blue")))
+          
+          output$x$layout$legend$font$size=8.5 # change legend text size
+          output
           
         })
         output$volcano_plot_UI <- renderUI({
           req(plots$volcano_plot) 
           # req(input$treatment1_label)
           # req(input$treatment2_label)
-          plotlyOutput("volcano_plot", height = "625px") %>% withSpinner(type = 5)
+          plotlyOutput("volcano_plot", height = "650px") %>% withSpinner(type = 5)
         })      
       } else {
         #Catch Error 

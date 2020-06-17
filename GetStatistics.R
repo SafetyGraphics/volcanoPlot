@@ -67,7 +67,7 @@ GetStatistics_HazardR <- function(data, ser, drug, period, residual, soc,
              AEREL = NA, AEOUT = NA, STUDYFL = NA, TRTEMFL = NA) %>%
       {if (soc == TRUE) mutate(., AEDECOD = NA) else .}
     
-    extension <- rbind(events, censors) %>%
+    extension <- bind_rows(events, censors) %>%
       group_by(USUBJID) %>%
       mutate(ADT = ifelse(CNSR == 1, min(RFENDTC + 30, TDDT), NA)) %>%
       rowwise() %>%
@@ -77,7 +77,7 @@ GetStatistics_HazardR <- function(data, ser, drug, period, residual, soc,
       mutate(AVAL = ADT - STARTDT + 1) %>%
       distinct()
     
-    data.extend <- rbind(data.extend, extension)
+    data.extend <- bind_rows(data.extend, extension)
   }
   
   data.extend <- data.extend %>%
@@ -188,7 +188,7 @@ GetStatistics_RateD <- function(data, ser, drug, period, residual, soc,treatment
              AEREL = NA, AEOUT = NA, STUDYFL = NA, TRTEMFL = NA) %>%
       {if (soc == TRUE) mutate(., AEDECOD = NA) else .}
     
-    extension <- rbind(events, censors) %>%
+    extension <- bind_rows(events, censors) %>%
       group_by(USUBJID) %>%
       mutate(ADT = ifelse(CNSR == 1, min(RFENDTC + 30, TDDT), NA)) %>%
       rowwise() %>%
@@ -198,7 +198,7 @@ GetStatistics_RateD <- function(data, ser, drug, period, residual, soc,treatment
       mutate(AVAL = ADT - STARTDT + 1) %>%
       distinct()
     
-    data.extend <- rbind(data.extend, extension)
+    data.extend <- bind_rows(data.extend, extension)
   }
   
   data.extend.summary <- data.extend %>%
@@ -328,7 +328,8 @@ GetStatistics_RateR <- function(data, ser, drug, period, residual, soc, treatmen
              AEREL = NA, AEOUT = NA, STUDYFL = NA, TRTEMFL = NA) %>%
              {if (soc == TRUE) mutate(., AEDECOD = NA) else .}
     
-    extension <- rbind(events, censors) %>%
+    #extension <- bind_rows(events, censors) %>%
+      extension <- bind_rows(events, censors) %>%
       group_by(USUBJID) %>%
       mutate(ADT = ifelse(CNSR == 1, min(RFENDTC + 30, TDDT), NA)) %>%
       rowwise() %>%
@@ -338,7 +339,7 @@ GetStatistics_RateR <- function(data, ser, drug, period, residual, soc, treatmen
       mutate(AVAL = ADT - STARTDT + 1) %>%
       distinct()
     
-    data.extend <- rbind(data.extend, extension)
+    data.extend <- bind_rows(data.extend, extension)
   }
   
   data.extend.summary <- data.extend %>%

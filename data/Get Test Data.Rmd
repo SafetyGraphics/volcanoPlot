@@ -49,9 +49,29 @@ match_vars
 no_vars = all_vars[which(!all_vars %in% colnames(test_data))]
 no_vars
 
-test_data2 = test_data %>% select(match_vars)
+test_data2 = test_data %>% select(match_vars) %>% group_by_all() %>% slice(1) %>% group_by() %>% as.data.frame() %>%
+    mutate(AESTDT = as.Date(AESTDT), AEENDT = as.Date(AEENDT), RFSTDTC = as.Date(RFSTDTC), RFENDTC = as.Date(RFENDTC))
 write_csv(test_data2, path="data/test_data.csv")
 
 
 ```
 
+
+
+Load test data
+```{r}
+
+setwd("~/Desktop/volcano-plot")
+library(scales); library(dplyr); library(tidyr); library(tibble); library(stringr); library(ggplot2); library(cowplot); library(ggpubr)
+select <- dplyr::select; rename <- dplyr::rename; mutate <- dplyr::mutate; 
+summarize <- dplyr::summarize; arrange <- dplyr::arrange; slice <- dplyr::slice; filter <- dplyr::filter; recode<-dplyr::recode
+style <- plotly::style
+```
+
+
+```{r}
+library(data.table)
+
+test_data = fread("data/test_data.csv") %>% as.data.frame() %>%
+    mutate(AESTDT = as.Date(AESTDT), AEENDT = as.Date(AEENDT), RFSTDTC = as.Date(RFSTDTC), RFENDTC = as.Date(RFENDTC))
+```

@@ -2,14 +2,17 @@
 # ui.R
 # This R Script only defines the Web layout for the Shiny App.
 ################################################################################
-# test
+# test#
 ui <- fluidPage(
   tags$head(tags$style(HTML("hr {border-top: 1px solid #999999;}"))), # horizontal line option
   headerPanel('Volcano Plot'),
   useShinyjs(),
   sidebarPanel(width=4,align="center",
-               column(width=6,uiOutput("update_UI"),uiOutput("obtain_UI")),
-               column(width=6,uiOutput("reset_UI")),hr(),
+               fluidRow(
+                 column(width=4,uiOutput("obtain_UI")),
+                 column(width=4,uiOutput("update_UI")),
+                 column(width=4,uiOutput("reset_UI"))
+               ),hr(),
                fluidRow(
                  column(width=6,radioGroupButtons("data_type","Type:",choices=c("SDTM","ADaM"), selected="SDTM", status="primary", size="normal")),
                  column(width=6,fileInput("file_ae_test", label = "Import dataset (.csv)", accept = ".csv"))
@@ -30,12 +33,14 @@ ui <- fluidPage(
                uiOutput("subgroup_var_UI"),
                uiOutput("subgroup_vals_title_UI"),
                uiOutput("subgroup_vals_UI"),
-               wellPanel(align="center",dropdown(label="Plot Options",icon = icon("chart-bar"), width = "600px",size="lg",style="stretch",status="primary",
-                                                 wellPanel(fluidRow(
+               #wellPanel(align="center",
+                         #dropdown(label="Plot Options",icon = icon("chart-bar"), width = "600px",size="lg",style="stretch",status="primary",
+                                                 #wellPanel(fluidRow(
+               fluidRow(
                                                    column(width=4,uiOutput("X_ref_UI")),
                                                    column(width=4,uiOutput("Y_ref_UI")),
-                                                   column(width=4,uiOutput("pvalue_option_UI"))
-                                                 ))))
+                                                   column(width=4,uiOutput("pvalue_option_UI")))
+                                                 #))))
                
   ),
   mainPanel(
