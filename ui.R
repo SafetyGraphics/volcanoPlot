@@ -11,7 +11,7 @@ ui <- fluidPage(
                column(width=6,uiOutput("update_UI"),uiOutput("obtain_UI")),
                column(width=6,uiOutput("reset_UI")),hr(),
                fluidRow(
-                 column(width=6,radioGroupButtons("data_type","Type:",choices=c("SDTM","ADaM"), selected="SDTM", status="primary", size="md")),
+                 column(width=6,radioGroupButtons("data_type","Type:",choices=c("SDTM","ADaM"), selected="SDTM", status="primary", size="medium")),
                  column(width=6,fileInput("file_ae_test", label = "Import dataset (.csv)", accept = ".csv"))
                ),  hr(),                
                fluidRow(
