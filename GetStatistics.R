@@ -12,35 +12,23 @@ GetStatistics_HazardR <- function(data, ser, drug, period, residual, soc,
   TDDT <- Sys.Date() # use today's date for convenience
   
   data <- data %>%
-    mutate_at(names(data)[!(names(data) %in% c("AESEQ", "AESTDY", "AEENDY",
-                                               "AGE", "RFENDY", "SAFFN"))],
-              ~as.character(.)) %>%
+    mutate_at(names(data)[!(names(data) %in% c("AESEQ", "AESTDY", "AEENDY","AGE", "RFENDY", "SAFFN"))], ~as.character(.)) %>%
     mutate_at(names(data), ~na_if(., "")) %>%
     mutate_at(c("AESTDT", "AEENDT", "RFSTDTC", "RFENDTC"), ~as.Date(.)) %>%
     drop_na(RFSTDTC) %>%
-    mutate(STARTDT = RFSTDTC) %>%
-    mutate(AEDECOD = ifelse(!is.na(AESTDT) & is.na(AEDECOD), "Not yet coded", AEDECOD)) %>%
-    mutate(AESTDT = ifelse(is.na(AESTDT) & !is.na(AEDECOD), RFSTDTC, AESTDT))
+    mutate(STARTDT = RFSTDTC,
+           AEDECOD = ifelse(!is.na(AESTDT) & is.na(AEDECOD), "Not yet coded", AEDECOD),
+           AESTDT = ifelse(is.na(AESTDT) & !is.na(AEDECOD), RFSTDTC, AESTDT))
   
-  if (ser == TRUE) {
-    data <- data %>% filter(AESER == "Y")
-  }
+  if (ser == TRUE) { data <- data %>% filter(AESER == "Y") }
   
-  if (drug == TRUE) {
-    data <- data %>% filter(AEREL == "Y")
-  }
+  if (drug == TRUE) { data <- data %>% filter(AEREL == "Y") }
   
-  if (period == "Treatment emergent") {
-    data <- data %>% filter(TRTEMFL == "Y")
-  }
+  if (period == "Treatment emergent") { data <- data %>% filter(TRTEMFL == "Y") }
   
-  if (period == "AE during entire study") {
-    data <- data %>% filter(STUDYFL == "Y")
-  }
+  if (period == "AE during entire study") { data <- data %>% filter(STUDYFL == "Y") }
   
-  if (period == "Other") {
-    data <- data %>% filter((AESTDT > RFSTDTC) & (AESTDT < (RFENDTC + residual)))
-  }
+  if (period == "Other") { data <- data %>% filter((AESTDT > RFSTDTC) & (AESTDT < (RFENDTC + residual))) }
   
   data <- data %>% filter(ARMCD %in% c(treatment1, treatment2))
   
@@ -62,7 +50,7 @@ GetStatistics_HazardR <- function(data, ser, drug, period, residual, soc,
     
     if (soc == FALSE) {
       aebodsys <- unique(events$AEBODSYS)
-    } else {}
+    }
     
     censors <- data %>%
       filter(!(USUBJID %in% events$USUBJID)) %>%
@@ -128,17 +116,14 @@ GetStatistics_HazardR <- function(data, ser, drug, period, residual, soc,
 
 
 ### Rate Difference (Large Sample Approximation by CLT) ------------------------
-GetStatistics_RateD <- function(data, ser, drug, period, residual, soc,
-                                treatment1, treatment2) {
+GetStatistics_RateD <- function(data, ser, drug, period, residual, soc,treatment1, treatment2) {
   
   if (is.null(treatment1) | is.null(treatment2)) {return(NULL)}
   
   TDDT <- Sys.Date() # use today's date for convenience
   
   data <- data %>%
-    mutate_at(names(data)[!(names(data) %in% c("AESEQ", "AESTDY", "AEENDY",
-                                               "AGE", "RFENDY", "SAFFN"))],
-              ~as.character(.)) %>%
+    mutate_at(names(data)[!(names(data) %in% c("AESEQ", "AESTDY", "AEENDY","AGE", "RFENDY", "SAFFN"))],~as.character(.)) %>%
     mutate_at(names(data), ~na_if(., "")) %>%
     mutate_at(c("AESTDT", "AEENDT", "RFSTDTC", "RFENDTC"), ~as.Date(.)) %>%
     drop_na(RFSTDTC) %>%
@@ -271,17 +256,14 @@ GetStatistics_RateD <- function(data, ser, drug, period, residual, soc,
 
 
 ### Rate Ratio (Large Sample Approximation by CLT) -----------------------------
-GetStatistics_RateR <- function(data, ser, drug, period, residual, soc,
-                                treatment1, treatment2) {
+GetStatistics_RateR <- function(data, ser, drug, period, residual, soc, treatment1, treatment2) {
   
   if (is.null(treatment1) | is.null(treatment2)) {return(NULL)}
   
   TDDT <- Sys.Date() # use today's date for convenience
   
   data <- data %>%
-    mutate_at(names(data)[!(names(data) %in% c("AESEQ", "AESTDY", "AEENDY",
-                                               "AGE", "RFENDY", "SAFFN"))],
-              ~as.character(.)) %>%
+    mutate_at(names(data)[!(names(data) %in% c("AESEQ", "AESTDY", "AEENDY","AGE", "RFENDY", "SAFFN"))], ~as.character(.)) %>%
     mutate_at(names(data), ~na_if(., "")) %>%
     mutate_at(c("AESTDT", "AEENDT", "RFSTDTC", "RFENDTC"), ~as.Date(.)) %>%
     drop_na(RFSTDTC) %>%
@@ -437,25 +419,15 @@ GetStatistics_RiskD <- function(data, ser, drug, period, residual, soc,
     filter(ARMCD %in% treatment2) %>% distinct(USUBJID) %>%
     tally() %>% as.numeric()
   
-  if (ser == TRUE) {
-    data <- data %>% filter(AESER == "Y")
-  }
+  if (ser == TRUE) { data <- data %>% filter(AESER == "Y") }
   
-  if (drug == TRUE) {
-    data <- data %>% filter(AEREL == "Y")
-  }
+  if (drug == TRUE) { data <- data %>% filter(AEREL == "Y") }
   
-  if (period == "Treatment emergent") {
-    data <- data %>% filter(TRTEMFL == "Y")
-  }
+  if (period == "Treatment emergent") { data <- data %>% filter(TRTEMFL == "Y") }
   
-  if (period == "AE during entire study") {
-    data <- data %>% filter(STUDYFL == "Y")
-  }
+  if (period == "AE during entire study") { data <- data %>% filter(STUDYFL == "Y") }
   
-  if (period == "Other") {
-    data <- data %>% filter((AESTDT > RFSTDTC) & (AESTDT < (RFENDTC + residual)))
-  }
+  if (period == "Other") {  data <- data %>% filter((AESTDT > RFSTDTC) & (AESTDT < (RFENDTC + residual))) }
   
   data <- data %>% filter(ARMCD %in% c(treatment1, treatment2))
   
@@ -509,9 +481,7 @@ GetStatistics_RiskR <- function(data, ser, drug, period, residual, soc,
   if (is.null(treatment1) | is.null(treatment2)) {return(NULL)}
   
   data <- data %>%
-    mutate_at(names(data)[!(names(data) %in% c("AESEQ", "AESTDY", "AEENDY",
-                                               "AGE", "RFENDY", "SAFFN"))],
-              ~as.character(.)) %>%
+    mutate_at(names(data)[!(names(data) %in% c("AESEQ", "AESTDY", "AEENDY", "AGE", "RFENDY", "SAFFN"))], ~as.character(.)) %>%
     mutate_at(names(data), ~na_if(., "")) %>%
     mutate_at(c("AESTDT", "AEENDT", "RFSTDTC", "RFENDTC"), ~as.Date(.)) %>%
     drop_na(RFSTDTC) %>%

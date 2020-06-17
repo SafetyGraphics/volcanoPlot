@@ -15,29 +15,31 @@ server <- function(input, output, session) {
   
   ### Data uploading -----------------------------------------------------------
   ae_test_data <- reactive({
+    # SDTM
     file <- input$file_ae_test
     if (is.null(file)) return()
     df <- fread(input$file_ae_test$datapath)
   })
   
   statistics_data <- reactive({
+    # ADAM
     file <- input$file_statistics
     if (is.null(file)) return()
     df <- fread(input$file_statistics$datapath)
   })
   
   observe({
+    #only runs for SDTM
     if (!is.null(ae_test_data())) {
       data$ae_test <- ae_test_data()
-    } 
-    # if (is.null(data$ae_test)){
-    #   filename <- paste0(getwd(),"/ae-test.csv")
-    #   if(file.exists(filename)){
-    #     data$ae_test <- fread(filename)
-    #   } else {
-    #     shinyjs::alert(paste0("SDTM file does not exist:",filename))
-    #   }
+    }
+
+    # only runs for ADAM
+    # if (!is.null(statistics_data())) {
+    #   data$ae_test <- statistics_data()
     # } 
+    
+
   })
 
 
@@ -51,14 +53,12 @@ server <- function(input, output, session) {
   ### Definitions of UI outputs in the control panel and related logics --------
   output$summary_by_UI <- renderUI({
     req(data$ae_test) 
-    selectInput("summary_by", "Summary By",
-                choices = c("Patients", "Events"), multiple = F)
+    selectInput("summary_by", "Summary By", choices = c("Patients", "Events"))
   })
 
   output$review_by_UI <- renderUI({
     req(data$ae_test) 
-    selectInput("review_by", "Review By",
-                choices = c("PT", "SOC", "Other"), multiple = F)
+    selectInput("review_by", "Review By", choices = c("PT", "SOC", "Other"))
   })
 
   output$review_by_please_specify_UI <- renderUI({
@@ -70,8 +70,7 @@ server <- function(input, output, session) {
   
   output$period_UI <- renderUI({
     req(data$ae_test) 
-    selectInput("period", "Period",
-                choices = c("Treatment emergent", "AE during entire study", "Other"), multiple = F)
+    selectInput("period", "Period",choices = c("Treatment emergent", "AE during entire study", "Other"))
   })
 
   output$period_please_specify_UI <- renderUI({
@@ -100,8 +99,8 @@ server <- function(input, output, session) {
                             "Risk Ratio",
                             "Hazard Ratio",
                             "Risk Difference",
-                            "Rate Difference"), 
-                multiple = F)
+                            "Rate Difference")
+                )
   })
   
   output$treatment1_UI <- renderUI({
@@ -242,8 +241,7 @@ server <- function(input, output, session) {
   })
 
 
-  ### An essential step for obtaining statistics right after data uploading and 
-  ### before the generation of volcano plot ------------------------------------
+  ### An essential step for obtaining statistics right after data uploading and before the generation of volcano plot ------------------------------------
   observeEvent(input$obtain, {
     req(input$review_by)
     req(input$summary_by)
@@ -486,7 +484,7 @@ server <- function(input, output, session) {
   ### Definition of 'Reset' button UI output and its consequent triggerings ----
   output$reset_UI <- renderUI({
     req(data$ae_test)
-    actionButton("reset", "Reset")
+    actionBttn("reset", "Reset",color = "primary",style = "bordered",block=TRUE)
   })
   
   observeEvent(input$reset, {
@@ -527,7 +525,7 @@ server <- function(input, output, session) {
   ### Definition of 'Obtain Statistics' button UI output -----------------------
   output$obtain_UI <- renderUI({
     req(data$ae_test)
-    actionButton("obtain", "Obtain Statistics")
+    actionBttn("obtain", "Obtain Statistics",color = "primary",style = "bordered",block=TRUE)
   })
   
   
@@ -536,7 +534,7 @@ server <- function(input, output, session) {
     req(data$ae_test)
     if (input$review_by == "PT") {req(data$statistics)}
     if (input$review_by == "SOC") {req(data$statistics_soc)}
-    actionButton("update", "Update Plot")
+    actionBttn("update", "Update Plot",color = "primary",style = "bordered",block=TRUE)
   })
 
   

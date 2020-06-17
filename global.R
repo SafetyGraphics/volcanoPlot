@@ -19,6 +19,7 @@ library(tidyr) # version: 1.0.2
 library(survival) # version: 3.1-8
 library(survminer) # version: 0.4.6
 library(fmsb) # version: 0.7.0
+library(shinyWidgets)
 
 # if function conflicts, default dplyr
 conflict_prefer("first", "dplyr")
