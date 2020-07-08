@@ -7,17 +7,16 @@ ui <- fluidPage(
   tags$head(tags$style(HTML("hr {border-top: 1px solid #999999;}"))), # horizontal line option
   fluidRow(align="center",h1("Volcano Plot")),
   useShinyjs(),
-  
-  fluidRow(
     column(width=4,
            wellPanel(
              fluidRow(
                column(width=1),
                column(width=4,radioGroupButtons("data_type","Type: (Doesn't work yet)",choices=c("SDTM","ADaM"), selected="SDTM", status="primary", size="normal")),
                column(width=6,fileInput("file_ae_test", label = "Import dataset (.csv)", accept = ".csv"))
-             )))),
+             )),
   conditionalPanel(condition = "output.fileUploaded",
-                   sidebarPanel(width=4,align="center",
+                   wellPanel(
+                     fluidRow(align="center",
                                 fluidRow(
                                   column(width=4,uiOutput("obtain_UI")),
                                   column(width=4,uiOutput("update_UI")),
@@ -37,22 +36,24 @@ ui <- fluidPage(
                                   column(width=6,uiOutput("treatment2_UI"),  uiOutput("treatment2_label_UI")   )
                                 ),hr(),
                                 fluidRow(
-                                  selectInput("test", "Measure of Association", choices = c("Rate Ratio", "Risk Ratio", "Hazard Ratio", "Risk Difference", "Rate Difference")),
-                                  selectInput("subgroup_var", "Subgroup Variable", choices = c("No Subgroup Variable", "SITE", "SEX", "RACE"),selected = "No Subgroup Variable"), uiOutput("subgroup_vals_UI")
+                                  selectInput("test", "Measure of Association", choices = c("Rate Ratio", "Risk Ratio", "Hazard Ratio", "Risk Difference", "Rate Difference"), width="75%"),
+                                  selectInput("subgroup_var", "Subgroup Variable", choices = c("No Subgroup Variable", "SITE", "SEX", "RACE"),selected = "No Subgroup Variable", width="75%"), uiOutput("subgroup_vals_UI")
                                 ),br(),hr(),
                                 fluidRow(
-                                  column(width=6,numericInput("X_ref", "X-axis Reference Lines", value = 0) ),
-                                  column(width=6,numericInput("Y_ref", "Y-axis Reference Line", value = 0.05))
+                                  column(width=6,numericInput("X_ref", "X-axis Reference Lines", value = 0,width="75%") ),
+                                  column(width=6,numericInput("Y_ref", "Y-axis Reference Line", value = 0.05,width="75%"))
                                 ),
                                 fluidRow(
-                                  column(width=6,selectInput("pvalue_option", "p-Value Option",choices = c("Unadjusted", "Adjusted"), selected="Unadjusted")),
-                                  column(width=6,selectInput("color_option", label="Color",choices=c("Body System or Organ Class","Severity"),selected="Body/Organ"))
+                                  column(width=6,selectInput("pvalue_adjustment", "P-value Adjustment",choices = c("Unadjusted", "Adjusted"), selected="Unadjusted",width="75%")),
+                                  column(width=6,selectInput("pvalue_label", "P-value Transformation",choices = c("None", "-log10"), selected="-log10",width="75%"))
+                                ),
+                                fluidRow(align="center",
+                                selectInput("color_option", label="Color",choices=c("Body System or Organ Class","Severity"),selected="Body/Organ",width="50%")
                                 )
-                                
+                     ))
                    )
-                   
-  ),
-  mainPanel(
+    ),
+  column(width=8,
     uiOutput("volcano_plot_UI"),
     
     br(),

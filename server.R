@@ -107,7 +107,7 @@ server <- function(input, output, session) {
                                                         "Rate Ratio",
                                                         "Risk Difference",
                                                         "Risk Ratio")) return()
-    textInput("treatment1_label", "Label for Exposed Group", value="Exposed")
+    textInput("treatment1_label", "Label for Exposed Group", value="Exposed",width="75%")
   })
 
   output$treatment2_label_UI <- renderUI({
@@ -117,7 +117,7 @@ server <- function(input, output, session) {
                                                         "Rate Ratio",
                                                         "Risk Difference",
                                                         "Risk Ratio")) return()
-    textInput("treatment2_label", "Label for Unexposed Group",value="Unexposed")
+    textInput("treatment2_label", "Label for Unexposed Group",value="Unexposed",width="75%")
   })
   
 
@@ -129,7 +129,7 @@ server <- function(input, output, session) {
                                                         "Rate Ratio",
                                                         "Risk Difference",
                                                         "Risk Ratio")) return()
-    div(style = 'height:130px; width:91%; overflow: scroll',
+    div(style = 'height:100px; width:91%; overflow: scroll',
        checkboxGroupInput("subgroup_vals", "Value for Subgroup", 
                           choices = sort(unique(data$ae_test[[input$subgroup_var]])),
                           inline = F)
@@ -534,7 +534,9 @@ server <- function(input, output, session) {
         X_label = paste(input$test, input$treatment1_label, "vs.", input$treatment2_label),
         review_by = input$review_by,
         summary_by = input$summary_by,
-        pvalue_option = input$pvalue_option)
+        pvalue_adjustment = input$pvalue_adjustment,
+        pvalue_label = input$pvalue_label
+        )
       )
       if (!"try-error" %in% class(p)) {
         

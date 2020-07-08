@@ -20,7 +20,8 @@ volcano.plot <- function(data,
                          X_label,
                          review_by,
                          summary_by,
-                         pvalue_option)
+                         pvalue_adjustment,
+                         pvalue_label)
 {
   assign("data", data, envir = .GlobalEnv)
   assign("statistics_data", statistics_data, envir = .GlobalEnv)
@@ -39,7 +40,8 @@ volcano.plot <- function(data,
   assign("X_label", X_label, envir = .GlobalEnv)
   assign("review_by", review_by, envir = .GlobalEnv)
   assign("summary_by", summary_by, envir = .GlobalEnv)
-  assign("pvalue_option", pvalue_option, envir = .GlobalEnv)
+  assign("pvalue_adjustment", pvalue_adjustment, envir = .GlobalEnv)
+  assign("pvalue_label", pvalue_label, envir = .GlobalEnv)
   
   ### Data pre-processing & data imputation ------------------------------------
   data <- data %>%
@@ -155,7 +157,7 @@ volcano.plot <- function(data,
   key <- row.names(statistics_data)
   
   # adjusted p value
-  if (pvalue_option=="Unadjusted"){
+  if (pvalue_adjustment=="Unadjusted"){
     statistics_data$my_pvalue = statistics_data$pvalue
   } else{
     statistics_data$my_pvalue = p.adjust(statistics_data$pvalue, method="fdr")
@@ -168,12 +170,23 @@ volcano.plot <- function(data,
     geom_vline(xintercept = ifelse(grepl("Ratio",test),1,0)+c(-X_ref,X_ref), color = 'grey30', linetype = "dotted") +
     theme_bw() +
     scale_x_continuous(X_label,expand = expansion(mult = c(0.05, 0.05)))+
-    scale_y_continuous(ifelse(pvalue_option=="Unadjusted","-log10(p-value)","-log10(adj. p-value)"),
+    scale_size_continuous(range = c(2, 15))
+  
+  if (pvalue_label=="-log10"){
+   p=p+ scale_y_continuous(ifelse(pvalue_adjustment=="Unadjusted","-log10(p-value)","-log10(adj. p-value)"),
                        trans = reverselog_trans(10), 
                        breaks = as.numeric(paste0("1e-",0:20)), 
                        labels = as.character(0:20), 
-                       expand = expansion(mult = c(0.05, 0.05)))+
-    scale_size_continuous(range = c(2, 15))
+                       expand = expansion(mult = c(0.05, 0.05)))
+  } else if (pvalue_label=="None"){
+    p=p+ scale_y_continuous(ifelse(pvalue_adjustment=="Unadjusted","P-value","Adj. p-value"),
+                            trans = reverselog_trans(10), 
+                            breaks = c(Y_ref, 0, .000000001,.00000001,.0000001,.000001,.00001,.00001, .0001, .001, .01, .1, 1),
+                            labels = as.character(c(Y_ref, 0, .000000001,.00000001,.0000001,.000001,.00001,.00001, .0001, .001, .01, .1, 1)),
+                            expand = expansion(mult = c(0.05, 0.05)))
+    
+  }
+  
   return(list(plot = p, data = data, N1 = N1, N2 = N2))
 }  
 
