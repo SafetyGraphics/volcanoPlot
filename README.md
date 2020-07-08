@@ -7,5 +7,5 @@ Original Developers
 - Dennis o'Brien (Boehringer Ingelheim)
 
 
-![image](https://user-images.githubusercontent.com/62663896/86885438-4ced5780-c0c3-11ea-9ee7-b87aba9295f5.png)
+![image](https://user-images.githubusercontent.com/62663896/86954516-1ac01200-c124-11ea-8acf-dba461f2aa02.png)
 
