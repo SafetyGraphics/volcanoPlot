@@ -4,6 +4,7 @@
 ################################################################################
 
 server <- function(input, output, session) {
+
   
   data <- reactiveValues(ae_test = NULL,
                          statistics = NULL,
@@ -22,25 +23,23 @@ server <- function(input, output, session) {
       mutate(AESTDT = as.Date(AESTDT), AEENDT = as.Date(AEENDT), RFSTDTC = as.Date(RFSTDTC), RFENDTC = as.Date(RFENDTC))
   })
   
+  # what is statistics_data used for?
   statistics_data <- reactive({
-    # ADAM
     file <- input$file_statistics
     if (is.null(file)) return()
     df <- fread(input$file_statistics$datapath)
   })
+  
+  # once data is loaded, all other inputs are loaded
+  output$fileUploaded <- reactive({ return(!is.null(ae_test_data())) })
+  outputOptions(output, 'fileUploaded', suspendWhenHidden=FALSE)
+  
   
   observe({
     #only runs for SDTM
     if (!is.null(ae_test_data())) {
       data$ae_test <- ae_test_data()
     }
-
-    # only runs for ADAM
-    # if (!is.null(statistics_data())) {
-    #   data$ae_test <- statistics_data()
-    # } 
-    
-
   })
 
 
@@ -52,16 +51,6 @@ server <- function(input, output, session) {
 
 
   ### Definitions of UI outputs in the control panel and related logics --------
-  output$summary_by_UI <- renderUI({
-    req(data$ae_test) 
-    selectInput("summary_by", "Summary By", choices = c("Patients", "Events"))
-  })
-
-  output$review_by_UI <- renderUI({
-    req(data$ae_test) 
-    selectInput("review_by", "Review By", choices = c("PT", "SOC", "Other"))
-  })
-
   output$review_by_please_specify_UI <- renderUI({
     req(data$ae_test) 
     req(input$review_by)
@@ -69,10 +58,6 @@ server <- function(input, output, session) {
     textInput("review_by_please_specify", "Please specify")
   })
   
-  output$period_UI <- renderUI({
-    req(data$ae_test) 
-    selectInput("period", "Period",choices = c("Treatment emergent", "AE during entire study", "Other"))
-  })
 
   output$period_please_specify_UI <- renderUI({
     req(data$ae_test) 
@@ -81,27 +66,6 @@ server <- function(input, output, session) {
     numericInput("period_please_specify",
                  HTML("Please enter residual period (in days)"),
                  value = 30, min = 0, max = 10^5)
-  })
-  
-  output$ser_UI <- renderUI({
-    req(data$ae_test) 
-    checkboxInput("ser", "Serious adverse event", value = FALSE)  
-  }) 
-
-  output$drug_UI <- renderUI({
-    req(data$ae_test) 
-    checkboxInput("drug", "Drug-related adverse events", value = FALSE)
-  }) 
-   
-  output$test_UI <- renderUI({
-    req(data$ae_test) 
-    selectInput("test", "Measure of Association", 
-                choices = c("Rate Ratio",
-                            "Risk Ratio",
-                            "Hazard Ratio",
-                            "Risk Difference",
-                            "Rate Difference")
-                )
   })
   
   output$treatment1_UI <- renderUI({
@@ -143,7 +107,7 @@ server <- function(input, output, session) {
                                                         "Rate Ratio",
                                                         "Risk Difference",
                                                         "Risk Ratio")) return()
-    textInput("treatment1_label", "Label for Exposed Group")
+    textInput("treatment1_label", "Label for Exposed Group", value="Exposed")
   })
 
   output$treatment2_label_UI <- renderUI({
@@ -153,92 +117,23 @@ server <- function(input, output, session) {
                                                         "Rate Ratio",
                                                         "Risk Difference",
                                                         "Risk Ratio")) return()
-    textInput("treatment2_label", "Label for Unexposed Group")
+    textInput("treatment2_label", "Label for Unexposed Group",value="Unexposed")
   })
   
-  subgroup_var_choices <- reactive({
-    req(data$ae_test) 
-    if(input$summary_by == "Events" & input$test %in% c("Hazard Ratio",
-                                                        "Rate Difference",
-                                                        "Rate Ratio",
-                                                        "Risk Difference",
-                                                        "Risk Ratio")) return()
-    c("No Subgroup Variable", colnames(data$ae_test))
-  })
-  
-  output$subgroup_var_UI <- renderUI({
-    req(data$ae_test) 
-    req(subgroup_var_choices()) 
-    if(input$summary_by == "Events" & input$test %in% c("Hazard Ratio",
-                                                        "Rate Difference",
-                                                        "Rate Ratio",
-                                                        "Risk Difference",
-                                                        "Risk Ratio")) return()
-    selectInput("subgroup_var", "Subgroup Variable", 
-                # choices = subgroup_var_choices(),
-                choices = c("No Subgroup Variable", "SITE", "SEX", "RACE"),
-                selected = NULL, multiple = F)
-  })
 
-  output$subgroup_vals_title_UI <- renderUI({ 
-    req(input$subgroup_var)
-    if(input$subgroup_var == "No Subgroup Variable") return()
-    if(input$summary_by == "Events" & input$test %in% c("Hazard Ratio",
-                                                        "Rate Difference",
-                                                        "Rate Ratio",
-                                                        "Risk Difference",
-                                                        "Risk Ratio")) return()
-    h5(strong("Value for Subgroup"))
-  })
 
   output$subgroup_vals_UI <- renderUI({
-    req(input$subgroup_var)
     if(input$subgroup_var == "No Subgroup Variable") return()
     if(input$summary_by == "Events" & input$test %in% c("Hazard Ratio",
                                                         "Rate Difference",
                                                         "Rate Ratio",
                                                         "Risk Difference",
                                                         "Risk Ratio")) return()
-    req(data$ae_test)
-    div(style = 'height:200px; width:91%; overflow: scroll',
-       checkboxGroupInput("subgroup_vals", "", 
+    div(style = 'height:130px; width:91%; overflow: scroll',
+       checkboxGroupInput("subgroup_vals", "Value for Subgroup", 
                           choices = sort(unique(data$ae_test[[input$subgroup_var]])),
                           inline = F)
     )
-  })
-  
-  output$X_ref_UI <- renderUI({
-    req(data$ae_test) 
-    req(input$test)
-    if(input$summary_by == "Events" & input$test %in% c("Hazard Ratio",
-                                                        "Rate Difference",
-                                                        "Rate Ratio",
-                                                        "Risk Difference",
-                                                        "Risk Ratio")) return()
-    if (input$test %in% c("Hazard Ratio", "Rate Ratio", "Risk Ratio")) {xref <- 1}
-    if (input$test %in% c("Rate Difference", "Risk Difference")) {xref <- 0}
-    textInput("X_ref", "X-axis Reference Line", value = xref)
-  })
-
-  output$Y_ref_UI <- renderUI({
-    req(data$ae_test) 
-    if(input$summary_by == "Events" & input$test %in% c("Hazard Ratio",
-                                                        "Rate Difference",
-                                                        "Rate Ratio",
-                                                        "Risk Difference",
-                                                        "Risk Ratio")) return()
-    textInput("Y_ref", "Y-axis Reference Line", value = 0.05)
-  })
-
-  output$pvalue_option_UI <- renderUI({
-    req(data$ae_test) 
-    if(input$summary_by == "Events" & input$test %in% c("Hazard Ratio",
-                                                        "Rate Difference",
-                                                        "Rate Ratio",
-                                                        "Risk Difference",
-                                                        "Risk Ratio")) return()
-    selectInput("pvalue_option", "p-Value Option",
-                choices = c("Unadjusted", "Adjusted"), multiple = F)
   })
 
 
@@ -595,26 +490,26 @@ server <- function(input, output, session) {
     #   } 
     # }
     
-    if(length(input$X_ref) > 0) {
-      X_ref <- as.numeric(input$X_ref)
-      if(is.na(X_ref)) {
-        shinyjs::alert("Please enter a numeric value for X-axis reference line.")
-        return()
-      }   
-    }
-	
-    if(length(input$Y_ref) > 0) {
-      Y_ref <- as.numeric(input$Y_ref)
-      if(is.na(Y_ref)) {
-        shinyjs::alert("Please enter a numeric value for Y-axis reference line.")
-        return()
-      } else {
-        if (!(as.numeric(input$Y_ref) >= 0 & as.numeric(input$Y_ref) <= 1)) {
-          shinyjs::alert("Please enter a valid value between 0 and 1 for Y-axis reference line.")
-          return()
-        }  
-      }
-    }
+    # if(length(input$X_ref) > 0) {
+    #   X_ref <- as.numeric(input$X_ref)
+    #   if(is.na(X_ref)) {
+    #     shinyjs::alert("Please enter a numeric value for X-axis reference line.")
+    #     return()
+    #   }   
+    # }
+    # 
+    # if(length(input$Y_ref) > 0) {
+    #   Y_ref <- as.numeric(input$Y_ref)
+    #   if(is.na(Y_ref)) {
+    #     shinyjs::alert("Please enter a numeric value for Y-axis reference line.")
+    #     return()
+    #   } else {
+    #     if (!(as.numeric(input$Y_ref) >= 0 & as.numeric(input$Y_ref) <= 1)) {
+    #       shinyjs::alert("Please enter a valid value between 0 and 1 for Y-axis reference line.")
+    #       return()
+    #     }  
+    #   }
+    # }
 
     plots$volcano_plot <- NULL
     plots$volcano_plot_data <- NULL
@@ -632,8 +527,6 @@ server <- function(input, output, session) {
         test = input$test,
         Treatment1 = input$treatment1,
         Treatment2 = input$treatment2,
-        treatment1_label = input$treatment1_label,
-        treatment2_label = input$treatment2_label,
         subgroup_var = input$subgroup_var,
         subgroup_vals = input$subgroup_vals,
         X_ref = as.numeric(input$X_ref),
@@ -706,11 +599,11 @@ server <- function(input, output, session) {
           
         })
         output$volcano_plot_UI <- renderUI({
-          req(plots$volcano_plot) 
+          req(plots$volcano_plot)
           # req(input$treatment1_label)
           # req(input$treatment2_label)
           plotlyOutput("volcano_plot", height = "650px") %>% withSpinner(type = 5)
-        })      
+        })
       } else {
         #Catch Error 
         plots$volcano_plot <- NULL

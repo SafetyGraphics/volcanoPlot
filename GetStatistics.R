@@ -271,23 +271,15 @@ GetStatistics_RateR <- function(data, ser, drug, period, residual, soc, treatmen
     mutate(AEDECOD = ifelse(!is.na(AESTDT) & is.na(AEDECOD), "Not yet coded", AEDECOD)) %>%
     mutate(AESTDT = ifelse(is.na(AESTDT) & !is.na(AEDECOD), RFSTDTC, AESTDT))
   
-  if (ser == TRUE) {
-    data <- data %>% filter(AESER == "Y")
-  }
+  if (ser == TRUE) {data <- data %>% filter(AESER == "Y") }
   
-  if (drug == TRUE) {
-    data <- data %>% filter(AEREL == "Y")
-  }
+  if (drug == TRUE) { data <- data %>% filter(AEREL == "Y") }
   
-  if (period == "Treatment emergent") {
-    data <- data %>% filter(TRTEMFL == "Y")
-  }
-  
-  if (period == "AE during entire study") {
+  if (period == "Treatment emergent") { 
+    data <- data %>% filter(TRTEMFL == "Y") 
+  }else if (period == "AE during entire study") {
     data <- data %>% filter(STUDYFL == "Y")
-  }
-  
-  if (period == "Other") {
+  }else if (period == "Other") {
     data <- data %>% filter((AESTDT > RFSTDTC) & (AESTDT < (RFENDTC + residual)))
   }
   
@@ -328,7 +320,6 @@ GetStatistics_RateR <- function(data, ser, drug, period, residual, soc, treatmen
              AEREL = NA, AEOUT = NA, STUDYFL = NA, TRTEMFL = NA) %>%
              {if (soc == TRUE) mutate(., AEDECOD = NA) else .}
     
-    #extension <- bind_rows(events, censors) %>%
       extension <- bind_rows(events, censors) %>%
       group_by(USUBJID) %>%
       mutate(ADT = ifelse(CNSR == 1, min(RFENDTC + 30, TDDT), NA)) %>%
@@ -359,6 +350,7 @@ GetStatistics_RateR <- function(data, ser, drug, period, residual, soc, treatmen
     {if (soc == TRUE) group_by(., AEBODSYS) else .} %>%
     distinct(USUBJID, .keep_all = TRUE) %>%
     {if (soc == FALSE) summarise(.,
+                                 AESEV=first(AESEV),
                                  AEBODSYS = first(AEBODSYS),
                                  COUNT1 = sum(ARMCD %in% treatment1),
                                  COUNT2 = sum(ARMCD %in% treatment2)) else .} %>%

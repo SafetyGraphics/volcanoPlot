@@ -39,9 +39,9 @@ source("GetStatistics.R")
 # Check that it doesn't match any non-number
 numbers_only <- function(x) !grepl("\\D", x)
 
-fmt_dcimals <- function(decimals = 0) {
-  function(x) format(x, nsmall = decimals, scientific = FALSE)
-}
+# fmt_dcimals <- function(decimals = 0) {
+#   function(x) format(x, nsmall = decimals, scientific = FALSE)
+# }
 
 reverselog_trans <- function(base = exp(1)) {
   trans <- function(x) -log(x, base)

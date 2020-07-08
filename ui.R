@@ -5,49 +5,58 @@
 # test#
 ui <- fluidPage(
   tags$head(tags$style(HTML("hr {border-top: 1px solid #999999;}"))), # horizontal line option
-  headerPanel('Volcano Plot'),
+  fluidRow(align="center",h1("Volcano Plot")),
   useShinyjs(),
-  sidebarPanel(width=4,align="center",
-               fluidRow(
-                 column(width=4,uiOutput("obtain_UI")),
-                 column(width=4,uiOutput("update_UI")),
-                 column(width=4,uiOutput("reset_UI"))
-               ),hr(),
-               fluidRow(
-                 column(width=6,radioGroupButtons("data_type","Type:",choices=c("SDTM","ADaM"), selected="SDTM", status="primary", size="normal")),
-                 column(width=6,fileInput("file_ae_test", label = "Import dataset (.csv)", accept = ".csv"))
-               ),  hr(),                
-               fluidRow(
-                 column(width=6,  uiOutput("summary_by_UI")	   ),
-                 column(width=6,  uiOutput("review_by_UI"),uiOutput("review_by_please_specify_UI")	   )
-               ),      hr(),   
-               fluidRow(
-                 column(width=6,uiOutput("period_UI"),	 uiOutput("period_please_specify_UI")),
-                 column(width=6,  uiOutput("ser_UI"), uiOutput("drug_UI")    )
-               ),hr(),
-               fluidRow(
-                 column(width=6,uiOutput("treatment1_UI"),  uiOutput("treatment1_label_UI"),    ),
-                 column(width=6,   uiOutput("treatment2_UI"),  uiOutput("treatment2_label_UI")   )
-               ),hr(),
-               uiOutput("test_UI"),
-               uiOutput("subgroup_var_UI"),
-               uiOutput("subgroup_vals_title_UI"),
-               uiOutput("subgroup_vals_UI"),
-               #wellPanel(align="center",
-                         #dropdown(label="Plot Options",icon = icon("chart-bar"), width = "600px",size="lg",style="stretch",status="primary",
-                                                 #wellPanel(fluidRow(
-               fluidRow(
-                                                   column(width=4,uiOutput("X_ref_UI")),
-                                                   column(width=4,uiOutput("Y_ref_UI")),
-                                                   column(width=4,uiOutput("pvalue_option_UI")))
-                                                 #))))
-               
+  
+  fluidRow(
+    column(width=4,
+           wellPanel(
+             fluidRow(
+               column(width=1),
+               column(width=4,radioGroupButtons("data_type","Type: (Doesn't work yet)",choices=c("SDTM","ADaM"), selected="SDTM", status="primary", size="normal")),
+               column(width=6,fileInput("file_ae_test", label = "Import dataset (.csv)", accept = ".csv"))
+             )))),
+  conditionalPanel(condition = "output.fileUploaded",
+                   sidebarPanel(width=4,align="center",
+                                fluidRow(
+                                  column(width=4,uiOutput("obtain_UI")),
+                                  column(width=4,uiOutput("update_UI")),
+                                  column(width=4,uiOutput("reset_UI"))
+                                ), hr(),                
+                                fluidRow(
+                                  column(width=4,selectInput("summary_by", "Summary By", choices = c("Patients", "Events"))),
+                                  column(width=4,selectInput("review_by", "Review By", choices = c("PT", "SOC", "Other")),uiOutput("review_by_please_specify_UI")),
+                                  column(width=4,selectInput("period", "Period",choices = c("Treatment emergent", "AE during entire study", "Other")),	 uiOutput("period_please_specify_UI")),
+                                ),
+                                fluidRow(
+                                  column(width=6,  checkboxInput("ser", "Serious adverse event", value = FALSE)), 
+                                  column(width=6,checkboxInput("drug", "Drug-related adverse events", value = FALSE))
+                                ),hr(),
+                                fluidRow(
+                                  column(width=6,uiOutput("treatment1_UI"),  uiOutput("treatment1_label_UI"),    ),
+                                  column(width=6,uiOutput("treatment2_UI"),  uiOutput("treatment2_label_UI")   )
+                                ),hr(),
+                                fluidRow(
+                                  selectInput("test", "Measure of Association", choices = c("Rate Ratio", "Risk Ratio", "Hazard Ratio", "Risk Difference", "Rate Difference")),
+                                  selectInput("subgroup_var", "Subgroup Variable", choices = c("No Subgroup Variable", "SITE", "SEX", "RACE"),selected = "No Subgroup Variable"), uiOutput("subgroup_vals_UI")
+                                ),br(),hr(),
+                                fluidRow(
+                                  column(width=6,numericInput("X_ref", "X-axis Reference Lines", value = 0) ),
+                                  column(width=6,numericInput("Y_ref", "Y-axis Reference Line", value = 0.05))
+                                ),
+                                fluidRow(
+                                  column(width=6,selectInput("pvalue_option", "p-Value Option",choices = c("Unadjusted", "Adjusted"), selected="Unadjusted")),
+                                  column(width=6,selectInput("color_option", label="Color",choices=c("Body System or Organ Class","Severity"),selected="Body/Organ"))
+                                )
+                                
+                   )
+                   
   ),
   mainPanel(
     uiOutput("volcano_plot_UI"),
+    
     br(),
-    div(uiOutput("footnote_UI"),
-        style = "font-size: 12px; white-space: pre"),
+    div(uiOutput("footnote_UI"),style = "font-size: 12px; white-space: pre"),
     br(),
     uiOutput("volcano_plot_drill_UI")
   )

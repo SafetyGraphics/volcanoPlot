@@ -13,8 +13,6 @@ volcano.plot <- function(data,
                          test, 
                          Treatment1,
                          Treatment2, 
-                         treatment1_label,
-                         treatment2_label,
                          subgroup_var,
                          subgroup_vals,
                          X_ref,
@@ -34,8 +32,6 @@ volcano.plot <- function(data,
   assign("test", test, envir = .GlobalEnv)
   assign("Treatment1", Treatment1, envir = .GlobalEnv)
   assign("Treatment2", Treatment2, envir = .GlobalEnv)
-  assign("treatment1_label", treatment1_label, envir = .GlobalEnv)
-  assign("treatment2_label", treatment2_label, envir = .GlobalEnv)
   assign("subgroup_var", subgroup_var, envir = .GlobalEnv)
   assign("subgroup_vals", subgroup_vals, envir = .GlobalEnv)
   assign("X_ref", X_ref, envir = .GlobalEnv)
@@ -94,7 +90,7 @@ volcano.plot <- function(data,
     group_by(ARMCD) %>%
     {if (summary_by == "Patients") filter(., !is.na(RFSTDTC)) else .} %>%
     {if (summary_by == "Patients") summarise(., N = length(unique((USUBJID)))) else .} %>%
-    {if (summary_by == "Events") summarise(., N = n()) else .}
+    {if (summary_by == "Events") summarise(., N = n()) else .} 
     
   N1 <- sum(subset(TRT_N, ARMCD %in% Treatment1)$N)
   N2 <- sum(subset(TRT_N, ARMCD %in% Treatment2)$N)
@@ -155,32 +151,29 @@ volcano.plot <- function(data,
             axis.ticks.y = element_blank())      
     return(list(plot = p, data = data))
   }
-  breaks <- c(Y_ref, 0, .00001, .0001, .001, .01, .1, 1)
+
   key <- row.names(statistics_data)
   
-  # pt_size <- statistics_data %>%
-  #   mutate('N3' = N1+N2) %>%
-  #   select('N3')
-  pt_size <- statistics_data %>%
-    mutate('N3' = N1 + N2) 
-  
-  if (test %in% c("Hazard Ratio", "Rate Ratio", "Risk Ratio")) {x_L <- 0; x_U <- 2 * X_ref}
-  if (test == "Rate Difference") {
-    x_L <- min(statistics_data$TEST, na.rm = TRUE) - 1
-    x_U <- max(statistics_data$TEST, na.rm = TRUE) + 1
+  # adjusted p value
+  if (pvalue_option=="Unadjusted"){
+    statistics_data$my_pvalue = statistics_data$pvalue
+  } else{
+    statistics_data$my_pvalue = p.adjust(statistics_data$pvalue, method="fdr")
   }
-  if (test == "Risk Difference") {x_L <- X_ref - 1; x_U <- X_ref + 1}
   
-  p <- ggplot(statistics_data, aes(TEST, pvalue, label = Summary, fill = AEBODSYS, key = key)) + 
-    # geom_point() + 
-    geom_point(size = pt_size$N3, pch=21, alpha=0.8) + 
-    geom_hline(aes(yintercept = Y_ref), color = 'grey30', linetype = "dotted") +
-    geom_vline(aes(xintercept = X_ref), color = 'grey30', linetype = "dotted") +
+  p <- ggplot(statistics_data, aes(TEST, my_pvalue, label = Summary, fill = AEBODSYS, key = key)) + 
+    geom_point(aes(size=N), pch=21, alpha=0.65) + 
+    geom_hline(yintercept = Y_ref, color = 'grey30', linetype = "dotted") +
+    geom_vline(xintercept = ifelse(grepl("Ratio",test),1,0), color = 'grey30', linetype = "dotted") +
+    geom_vline(xintercept = ifelse(grepl("Ratio",test),1,0)+c(-X_ref,X_ref), color = 'grey30', linetype = "dotted") +
     theme_bw() +
-    xlim(x_L, x_U) +
-    xlab(X_label)  +
-    scale_y_continuous(trans = reverselog_trans(10), breaks = breaks, labels = fmt_dcimals()) +
-    coord_cartesian(ylim = c(0.00001, 1))
+    scale_x_continuous(X_label,expand = expansion(mult = c(0.05, 0.05)))+
+    scale_y_continuous(ifelse(pvalue_option=="Unadjusted","-log10(p-value)","-log10(adj. p-value)"),
+                       trans = reverselog_trans(10), 
+                       breaks = as.numeric(paste0("1e-",0:20)), 
+                       labels = as.character(0:20), 
+                       expand = expansion(mult = c(0.05, 0.05)))+
+    scale_size_continuous(range = c(2, 15))
   return(list(plot = p, data = data, N1 = N1, N2 = N2))
 }  
 
