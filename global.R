@@ -20,7 +20,7 @@ library(survival) # version: 3.1-8
 library(survminer) # version: 0.4.6
 library(fmsb) # version: 0.7.0
 library(shinyWidgets)
-
+library(cowplot)
 # if function conflicts, default dplyr
 conflict_prefer("first", "dplyr")
 select <- dplyr::select; rename <- dplyr::rename; mutate <- dplyr::mutate; summarize <- dplyr::summarize; arrange <- dplyr::arrange; slice <- dplyr::slice; filter <- dplyr::filter; recode<-dplyr::recode
@@ -50,5 +50,4 @@ reverselog_trans <- function(base = exp(1)) {
             log_breaks(base = base), 
             domain = c(1e-100, Inf))
 }
-
 
