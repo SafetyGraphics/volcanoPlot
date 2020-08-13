@@ -6,44 +6,23 @@
 volcano.plot <- function(data,
                          statistics_data,
                          statistics_soc_data,
-                         ser,
-                         drug,
+                         ae_filter,
                          period,
                          residual,
                          test, 
-                         Treatment1,
-                         Treatment2, 
-                         treatment1_label,
-                         treatment2_label,
+                         treatment1,
+                         treatment2, 
                          subgroup_var,
                          subgroup_vals,
                          X_ref,
-                         Y_ref,
                          X_label,
                          review_by,
                          summary_by,
-                         pvalue_option)
+                         pvalue_label
+                         )
 {
-  assign("data", data, envir = .GlobalEnv)
-  assign("statistics_data", statistics_data, envir = .GlobalEnv)
-  assign("statistics_soc_data", statistics_soc_data, envir = .GlobalEnv)
-  assign("ser", ser, envir = .GlobalEnv)
-  assign("drug", drug, envir = .GlobalEnv)
-  assign("period", period, envir = .GlobalEnv)
-  assign("residual", residual, envir = .GlobalEnv)
-  assign("test", test, envir = .GlobalEnv)
-  assign("Treatment1", Treatment1, envir = .GlobalEnv)
-  assign("Treatment2", Treatment2, envir = .GlobalEnv)
-  assign("treatment1_label", treatment1_label, envir = .GlobalEnv)
-  assign("treatment2_label", treatment2_label, envir = .GlobalEnv)
-  assign("subgroup_var", subgroup_var, envir = .GlobalEnv)
-  assign("subgroup_vals", subgroup_vals, envir = .GlobalEnv)
-  assign("X_ref", X_ref, envir = .GlobalEnv)
-  assign("Y_ref", Y_ref, envir = .GlobalEnv)
-  assign("X_label", X_label, envir = .GlobalEnv)
-  assign("review_by", review_by, envir = .GlobalEnv)
-  assign("summary_by", summary_by, envir = .GlobalEnv)
-  assign("pvalue_option", pvalue_option, envir = .GlobalEnv)
+
+
   
   ### Data pre-processing & data imputation ------------------------------------
   data <- data %>%
@@ -56,8 +35,7 @@ volcano.plot <- function(data,
   
   
   ### Filtering based on selected treatment groups -----------------------------
-  data <- data %>%
-    filter(ARMCD %in% c(Treatment1, Treatment2))
+  data <- data %>% filter(ARMCD %in% c(treatment1, treatment2))
   
   
   ### Filtering based on subgroup variable -------------------------------------
@@ -67,26 +45,32 @@ volcano.plot <- function(data,
   
   
   ### Filtering based on other options from control panel ----------------------
-  if (ser == TRUE) {
-    data <- data %>% filter(AESER == "Y")
-  }
-
-  if (drug == TRUE) {
-    data <- data %>% filter(AEREL == "Y")
-  }
-  
-  if (period == "Treatment emergent") {
-    data <- data %>% filter(TRTEMFL == "Y")
+  # filter data for seriousness, drug-related, and severity
+  if (length(ae_filter)>0){
+    if ("Serious" %in% ae_filter) { data <- data %>% filter(AESER == "Y") }
+    if ("Drug-related" %in% ae_filter) { data <- data %>% filter(AEREL == "Y") }
+    if (sum(c("Mild","Moderate","Severe") %in% ae_filter)>0){
+      severity_filter = ae_filter[which(ae_filter%in% c("Mild","Moderate","Severe"))]
+      data = data %>% filter(AESEV %in% severity_filter)
+    }
   }
   
-  if (period == "AE during entire study") {
-    data <- data %>% filter(STUDYFL == "Y")
-  }
+  # filter data for ae timeframe
+  if (period == "Treatment emergent") { 
+    data <- data %>% filter(TRTEMFL == "Y") 
+  } else if (period == "AE during entire study") { data <- data %>% filter(STUDYFL == "Y") 
+  } else if (period == "Other") { data <- data %>% filter((AESTDT > RFSTDTC) & (AESTDT < (RFENDTC + residual))) 
+    }
   
-  if (period == "Other") {
-    data <- data %>% filter((as.Date(AESTDT) > as.Date(RFSTDTC)) & (as.Date(AESTDT) < (as.Date(RFENDTC) + residual)))
+  # filter data for seriousness, drug-related, and severity
+  if (length(ae_filter)>0){
+    if ("Serious" %in% ae_filter) { data <- data %>% filter(AESER == "Y") }
+    if ("Drug-related" %in% ae_filter) { data <- data %>% filter(AEREL == "Y") }
+    if (sum(c("Mild","Moderate","Severe") %in% ae_filter)>0){
+      severity_filter = ae_filter[which(ae_filter%in% c("Mild","Moderate","Severe"))]
+      data = data %>% filter(AESEV %in% severity_filter)
+    }
   }
-  
   
   ### Calculation of lowercase n -----------------------------------------------
   TRT_N <- data %>%
@@ -94,10 +78,10 @@ volcano.plot <- function(data,
     group_by(ARMCD) %>%
     {if (summary_by == "Patients") filter(., !is.na(RFSTDTC)) else .} %>%
     {if (summary_by == "Patients") summarise(., N = length(unique((USUBJID)))) else .} %>%
-    {if (summary_by == "Events") summarise(., N = n()) else .}
+    {if (summary_by == "Events") summarise(., N = n()) else .} 
     
-  N1 <- sum(subset(TRT_N, ARMCD %in% Treatment1)$N)
-  N2 <- sum(subset(TRT_N, ARMCD %in% Treatment2)$N)
+  N1 <- sum(subset(TRT_N, ARMCD %in% treatment1)$N)
+  N2 <- sum(subset(TRT_N, ARMCD %in% treatment2)$N)
   
   
   ### Data preparation for the next step of data integration -------------------
@@ -116,32 +100,35 @@ volcano.plot <- function(data,
   
   ### Integration of data for the purpose of graph & listing presentation ------
   if (review_by == "SOC") {
-    statistics_data <- statistics_soc_data %>%  
+    statistics_data <- statistics_soc_data %>% group_by() %>%
       inner_join(data %>% select(ARMCD, AEBODSYS) %>% unique()) %>% 
       inner_join(SOC_N) %>%
       mutate(N1 = (ARMCD %in% Treatment1) * N,
              N2 = (ARMCD %in% Treatment2) * N,
              pvalue = TESTP,
+             adjpvalue = p.adjust(pvalue, method="fdr"),
              Summary = paste0("\nSOC:", AEBODSYS,
-                              "\n<", N1, ",", N2,">",
+                              "\n","n=",ifelse(N1==0,N2,N1),
                               "\n", test, ":", TEST,
-                              "\np-Value:", pvalue))
+                              "\np-Value:", round(pvalue,4)))
   } else {
-    statistics_data <- statistics_data %>%  
+    statistics_data <- statistics_data %>%  group_by() %>%
       inner_join(data %>% select(ARMCD, AEBODSYS, AEDECOD) %>% unique())  %>% 
       inner_join(PT_N) %>%
-      mutate(N1 = (ARMCD %in% Treatment1) * N,
-             N2 = (ARMCD %in% Treatment2) * N,
+      mutate(N1 = (ARMCD %in% treatment1) * N,
+             N2 = (ARMCD %in% treatment2) * N,
              pvalue = TESTP,
-             Summary = paste0("\nSOC:", AEBODSYS,
-                              "\nPT:", AEDECOD, " <", N1, ",", N2, ">",
+             adjpvalue = p.adjust(pvalue, method="fdr"),
+             Summary = paste0("\n SOC:", AEBODSYS,
+                              "\n PT:", AEDECOD, 
+                              "\n n=",ifelse(N1==0,N2,N1),
                               "\n", test, ":", TEST,
-                              "\np-Value:", pvalue))
+                              "\n p-value:", round(pvalue,4)," (adj. p-value: ", round(adjpvalue,4)))
   }
   
   
   ### Construction of volcano plot ---------------------------------------------
-  if (dim(statistics_data)[1] == 0) {
+  if (nrow(statistics_data) == 0) {
     p <- ggplot() + 
       annotate("text", x = 4, y = 25, size = 8, label = "No data selected for plot.") + 
       theme_bw() +
@@ -155,32 +142,42 @@ volcano.plot <- function(data,
             axis.ticks.y = element_blank())      
     return(list(plot = p, data = data))
   }
-  breaks <- c(Y_ref, 0, .00001, .0001, .001, .01, .1, 1)
+
+  
+  statistics_data = statistics_data %>% filter(TEST!=Inf)
+  
   key <- row.names(statistics_data)
+    
+   pvalue_adj0.05 = (statistics_data %>% group_by() %>% filter(adjpvalue<=0.05) %>% arrange(desc(adjpvalue)) %>% slice(1))$pvalue
+    
   
-  # pt_size <- statistics_data %>%
-  #   mutate('N3' = N1+N2) %>%
-  #   select('N3')
-  pt_size <- statistics_data %>%
-    mutate('N3' = N1 + N2) 
+  p <- ggplot(statistics_data, aes(TEST, pvalue, label = Summary, key = key)) + 
+    geom_point(aes(size=N), pch=21, alpha=0.5, fill="skyblue2") + 
+    geom_hline(yintercept = 0.05, color = 'grey30', linetype = "dashed") +
+    geom_hline(yintercept = pvalue_adj0.05, color = 'grey30', linetype = "dotted") +
+    geom_vline(xintercept = ifelse(grepl("Ratio",test),1,0), color = 'grey30', linetype = "dashed") +
+    geom_vline(xintercept = ifelse(grepl("Ratio",test),1,0)+c(-X_ref,X_ref), color = 'grey30', linetype = "dashed") +
+    theme_classic() +
+    background_grid(major = "xy", minor = "none", color.major="grey92")+
+    theme(legend.position = "none")+
+    scale_x_continuous(X_label,expand = expansion(mult = c(0.05, 0.05)))+
+    scale_size_continuous(range = c(2, 15))
   
-  if (test %in% c("Hazard Ratio", "Rate Ratio", "Risk Ratio")) {x_L <- 0; x_U <- 2 * X_ref}
-  if (test == "Rate Difference") {
-    x_L <- min(statistics_data$TEST, na.rm = TRUE) - 1
-    x_U <- max(statistics_data$TEST, na.rm = TRUE) + 1
+  if (pvalue_label=="-log10"){
+   p=p+ scale_y_continuous("-log10(p-value)",
+                       trans = reverselog_trans(10), 
+                       breaks = as.numeric(paste0("1e-",0:20)), 
+                       labels = as.character(0:20), 
+                       expand = expansion(mult = c(0.05, 0.05)))
+  } else if (pvalue_label=="None"){
+    p=p+ scale_y_continuous("P-value",
+                            trans = reverselog_trans(10), 
+                            breaks = c(0.05, 0, .000000001,.00000001,.0000001,.000001,.00001,.00001, .0001, .001, .01, .1, 1),
+                            labels = as.character(c(0.05, 0, .000000001,.00000001,.0000001,.000001,.00001,.00001, .0001, .001, .01, .1, 1)),
+                            expand = expansion(mult = c(0.05, 0.05)))
+    
   }
-  if (test == "Risk Difference") {x_L <- X_ref - 1; x_U <- X_ref + 1}
   
-  p <- ggplot(statistics_data, aes(TEST, pvalue, label = Summary, color = AEBODSYS, key = key)) + 
-    # geom_point() + 
-    geom_point(size = pt_size$N3) + 
-    geom_hline(aes(yintercept = Y_ref), color = 'grey30', linetype = "dotted") +
-    geom_vline(aes(xintercept = X_ref), color = 'grey30', linetype = "dotted") +
-    theme_bw() +
-    xlim(x_L, x_U) +
-    xlab(X_label)  +
-    scale_y_continuous(trans = reverselog_trans(10), breaks = breaks, labels = fmt_dcimals()) +
-    coord_cartesian(ylim = c(0.00001, 1))
   return(list(plot = p, data = data, N1 = N1, N2 = N2))
 }  
 
