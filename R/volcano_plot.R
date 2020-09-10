@@ -11,65 +11,17 @@ volcano.plot <- function(data,
                          calculation.type, 
                          treatment1,
                          treatment2, 
-                         #subgroup_var,
-                         #subgroup_vals,
                          X_ref,
                          X_label,
                          review_by,
-                         #summary_by,
                          pvalue_label
                          )
 {
 
     summary_by="Patients"
+    
   
-  ### Data pre-processing & data imputation ------------------------------------
-  data <- data %>%
-    mutate_at(names(data)[!(names(data) %in% c("AESEQ", "AESTDY", "AEENDY",
-                                               "AGE", "RFENDY", "SAFFN"))],
-              ~as.character(.)) %>%
-    mutate_at(names(data), ~na_if(., "")) %>%
-    mutate(AEDECOD = ifelse(!is.na(AESTDT) & is.na(AEDECOD), "Not yet coded", AEDECOD)) %>%
-    mutate(AESTDT = ifelse(is.na(AESTDT) & !is.na(AEDECOD), RFSTDTC, AESTDT))
-  
-  
-  ### Filtering based on selected treatment groups -----------------------------
-  data <- data %>% filter(ARMCD %in% c(treatment1, treatment2))
-  
-  
-  ### Filtering based on subgroup variable -------------------------------------
-  # if (subgroup_var != "No Subgroup Variable") {
-  #   data <- filter(data, length(subgroup_vals) == 0 | get(subgroup_var) %in% subgroup_vals) 
-  # }
-  
-  
-  ### Filtering based on other options from control panel ----------------------
-  # filter data for seriousness, drug-related, and severity
-  if (length(ae_filter)>0){
-    if ("Serious" %in% ae_filter) { data <- data %>% filter(AESER == "Y") }
-    if ("Drug-related" %in% ae_filter) { data <- data %>% filter(AEREL == "Y") }
-    if (sum(c("Mild","Moderate","Severe") %in% ae_filter)>0){
-      severity_filter = ae_filter[which(ae_filter%in% c("Mild","Moderate","Severe"))]
-      data = data %>% filter(AESEV %in% severity_filter)
-    }
-  }
-  
-  # filter data for ae timeframe
-  if (period == "Treatment emergent") { 
-    data <- data %>% filter(TRTEMFL == "Y") 
-  } else if (period == "AE during entire study") { data <- data %>% filter(STUDYFL == "Y") 
-  } else if (period == "Other") { data <- data %>% filter((AESTDT > RFSTDTC) & (AESTDT < (RFENDTC + residual))) 
-    }
-  
-  # filter data for seriousness, drug-related, and severity
-  if (length(ae_filter)>0){
-    if ("Serious" %in% ae_filter) { data <- data %>% filter(AESER == "Y") }
-    if ("Drug-related" %in% ae_filter) { data <- data %>% filter(AEREL == "Y") }
-    if (sum(c("Mild","Moderate","Severe") %in% ae_filter)>0){
-      severity_filter = ae_filter[which(ae_filter%in% c("Mild","Moderate","Severe"))]
-      data = data %>% filter(AESEV %in% severity_filter)
-    }
-  }
+
   
   ### Calculation of lowercase n -----------------------------------------------
   TRT_N <- data %>%
@@ -147,13 +99,15 @@ volcano.plot <- function(data,
   
   key <- row.names(statistics_data)
     
-   pvalue_adj0.05 = (statistics_data %>% group_by() %>% filter(adjpvalue<=0.05) %>% arrange(desc(adjpvalue)) %>% slice(1))$pvalue
+  
+      significant_data =  statistics_data %>% group_by() %>% filter(adjpvalue<=0.05) %>% arrange(desc(adjpvalue)) %>% slice(1)
+      pvalue_adj0.05 = significant_data$pvalue
+
     
   
-  p <- ggplot(statistics_data, aes(TEST, pvalue, label = Summary, key = key)) + 
+  p <- ggplot(statistics_data%>% group_by(), aes(TEST, pvalue, label = Summary, key = key)) + 
     geom_point(aes(size=N), pch=21, alpha=0.5, fill="skyblue2") + 
     geom_hline(yintercept = 0.05, color = 'grey30', linetype = "dashed") +
-    geom_hline(yintercept = pvalue_adj0.05, color = 'grey30', linetype = "dotted") +
     geom_vline(xintercept = ifelse(grepl("Ratio",calculation.type),1,0), color = 'grey30', linetype = "dashed") +
     geom_vline(xintercept = ifelse(grepl("Ratio",calculation.type),1,0)+c(-X_ref,X_ref), color = 'grey30', linetype = "dashed") +
     theme_classic() +
@@ -161,6 +115,10 @@ volcano.plot <- function(data,
     theme(legend.position = "none")+
     scale_x_continuous(X_label,expand = expansion(mult = c(0.05, 0.05)))+
     scale_size_continuous(range = c(2, 15))
+  
+  if (nrow(significant_data)!=0){
+      p = p+    geom_hline(yintercept = pvalue_adj0.05, color = 'grey30', linetype = "dotted")
+  }
   
   if (pvalue_label=="-log10"){
    p=p+ scale_y_continuous("-log10(p-value)",
