@@ -31,9 +31,12 @@ run_app <- function(onStart = NULL, options = list(), enableBookmarking = NULL) 
     options = options,
     enableBookmarking = enableBookmarking
   )
-  runApp(app, launch.browser = TRUE)
+  #runApp(app, launch.browser = TRUE)
+  runApp(app, launch.browser = FALSE)
 }
 
+
+#runApp(app=shinyApp(ui=app_ui, server=app_server))
 
 
 ######################## testing ###########################
@@ -60,4 +63,5 @@ source("GetStatistics.R")
 #source("~/Desktop/volcano-plot/archives/R/GetStatistics.R")
 source("util.R")
 source("volcano_plot.R")
+runApp(app=shinyApp(ui=app_ui, server=app_server))
 run_app()

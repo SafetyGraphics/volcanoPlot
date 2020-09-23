@@ -4,9 +4,8 @@
 ################################################################################
 
 
-GetStatistics_all  = function(data, data.mapping, calculation.type) {
-    
-    data = as.data.frame(data)
+GetStatistics_all  = function(data, data.mapping, review_by,calculation.type) {
+    firstup <- function(x) {substr(x, 1, 1) <- toupper(substr(x, 1, 1)); x} # makes PT and SOC names lowercase
     
     data$stratification_col <- data[,data.mapping$stratification_col] #the column used to calculate points on the volcano plot (typically 'soc' or 'pt')
     data$group_col <- data[,data.mapping$group_col] #the column containing the comparison group data (typically treatment)
@@ -15,22 +14,17 @@ GetStatistics_all  = function(data, data.mapping, calculation.type) {
     data$id_col <- data[,data.mapping$id_col]
     
     
-    if (calculation.type%in% c("Risk Ratio","Risk Difference")){
-        N1.total <- length(unique((data %>% filter(group_col %in% comparison_group))$id_col))
-        N2.total <- length(unique((data %>% filter(group_col %in% reference_group))$id_col))
-    }
-    
-    
     # calculates number of subjects in each stratification per treatment arm
     data.summary = data %>% 
         group_by(stratification_col, AEBODSYS, group_col) %>% 
         summarize(n=length(unique(id_col))) %>% 
         ungroup() %>%
         spread(group_col,n) %>% na.omit() %>%
-        rename(COUNT1=comparison_group, COUNT2=reference_group)
+        rename(COUNT1=comparison_group, COUNT2=reference_group) %>%
+        mutate(N=COUNT1+COUNT2)
     if (review_by == "SOC") { data.summary = data.summary %>% select(-AEBODSYS)    }
     
-    #ae.list = na.omit(unique(data.summary$stratification_col))
+    #ae.list = na.omit(unique(data.summary$stratification_col)) # eventually shorten number of ae needed to test
     ae.list = na.omit(unique(data$stratification_col))
     
     data.extend <- NULL
@@ -72,14 +66,12 @@ GetStatistics_all  = function(data, data.mapping, calculation.type) {
     data.extend$"stratification_col" = data.extend[,data.mapping$stratification_col]
     
     
+    # calculates person year
     if (calculation.type %in% c("Rate Difference", "Rate Ratio")){
-        
         data.extend.summary <- data.extend %>%
             group_by(stratification_col, AEBODSYS) %>%
             summarize(SAVAL1 = sum((group_col %in% comparison_group) * AVAL),
                       SAVAL2 = sum((group_col %in% reference_group) * AVAL))
-        
-        
     }
     
     
@@ -87,7 +79,6 @@ GetStatistics_all  = function(data, data.mapping, calculation.type) {
     
     ### Hazard Ratio (Cox's Proportional Hazards Model) ----------------------------
     if (calculation.type=="Hazard Ratio"){
-        
         
         getHazardRatio <- function(time, delta, trt) {
             fit <- coxph(Surv(time, delta) ~ trt)
@@ -152,20 +143,36 @@ GetStatistics_all  = function(data, data.mapping, calculation.type) {
     
     
     
+    
     ### Rate Ratio (Large Sample Approximation by CLT) -----------------------------
     else if (calculation.type=="Rate Ratio"){
-        result <- data.summary %>% left_join(data.extend.summary) %>%
+        
+        statistics_data <- data.summary %>% left_join(data.extend.summary) %>%group_by_all() %>%
             mutate(est.type = "Rate Ratio",
                    est.values = rateratio(a = COUNT1, b = COUNT2, PT1 = SAVAL1, PT0 = SAVAL2)$estimate,
                    p = rateratio(a = COUNT1, b = COUNT2, PT1 = SAVAL1, PT0 = SAVAL2)$p.value) %>%
             filter(p!=Inf) %>%
-            mutate(p.adj = p.adjust(p, method="fdr")) %>%
+            mutate(p.adj = p.adjust(p, method="fdr"),
+                   Summary = paste0("\n", "SOC: ", firstup(tolower(AEBODSYS)),
+                                    "\n",comparison_group," n=",COUNT1,", ", reference_group," n=", COUNT2,
+                                    "\n", calculation.type, ": ", round(est.values,4),
+                                    "\n","p-value: ", round(p,4)," (FDR: ", round(p.adj,4),")")) %>%
             select(-c(SAVAL1,SAVAL2))
+     
+            
+            if (review_by != "SOC"){
+                statistics_data$Summary = paste0("\n","PT: ",firstup(tolower(statistics_data$stratification_col)),statistics_data$Summary)  
+            }
+            
     }
     
     
     ### Risk Difference (Large Sample Approximation by CLT) ------------------------
     else if (calculation.type=="Risk Difference"){
+        
+        N1.total <- length(unique((data %>% filter(group_col %in% comparison_group))$id_col))
+        N2.total <- length(unique((data %>% filter(group_col %in% reference_group))$id_col))
+        
         getRiskDifference <- function(count1, count2) {
             r <- riskdifference(a = count1, b = count2, N1 = N1.total, N0 = N2.total)
             RD <- r$estimate
@@ -197,7 +204,11 @@ GetStatistics_all  = function(data, data.mapping, calculation.type) {
     
     ### Risk Ratio (Large Sample Approximation by CLT) -----------------------------
     else if (calculation.type=="Risk Ratio"){
-        # NEED N1 AND N2
+        
+        N1.total <- length(unique((data %>% filter(group_col %in% comparison_group))$id_col))
+        N2.total <- length(unique((data %>% filter(group_col %in% reference_group))$id_col))
+        
+        
         getRiskRatio <- function(count1, count2) {
             r <- riskratio(X = count1, Y = count2, m1 = N1.total, m2 = N2.total)
             RR <- r$estimate
@@ -226,6 +237,6 @@ GetStatistics_all  = function(data, data.mapping, calculation.type) {
     }
     
     
-    return(result)
+    return(statistics_data)
 }
 
