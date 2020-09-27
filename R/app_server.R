@@ -66,16 +66,6 @@ app_server <- function(input, output, session) {
         }
     })
     
-    # output$reference_group_label_UI <- renderUI({
-    #     #req(input$summary_by != "Events")
-    #     textInput("reference_group_label", "Label for Group A", value="Exposed",width="75%")
-    # })
-    # 
-    # output$comparison_group_label_UI <- renderUI({
-    #     #req(input$summary_by != "Events")
-    #     textInput("comparison_group_label", "Label for Group B",value="Unexposed",width="75%")
-    # })
-    
     
     filtered_data = reactive({
         period=input$period; residual=input$residual; review_by=input$review_by; ae_filter=input$ae_filter; comparison_group=input$comparison_group; reference_group=input$reference_group
@@ -122,42 +112,22 @@ app_server <- function(input, output, session) {
     ### An essential step for obtaining statistics right after data uploading and before the generation of volcano plot ------------------------------------
     observeEvent(input$obtain, {
         #if (input$period == "Other") {req(input$period_please_specify)}
-        withProgress(data$statistics <- GetStatistics_all(data = filtered_data(),
+        withProgress(data$statistics <- GetStatistics_all(filtered_data = filtered_data(),
                                                           data.mapping = list(stratification_col=ifelse(input$review_by != "SOC","AEDECOD","AEBODSYS"), #the column used to calculate points on the volcano plot (typically 'soc' or 'pt')
                                                                               group_col="ARMCD", #the column containing the comparison group data (typically treatment)
                                                                               reference_group=input$reference_group,
                                                                               comparison_group=input$comparison_group,
                                                                               id_col="USUBJID"),
-                                                          review_by=input$review_by,
-                                                          calculation.type = input$calculation.type #valid options are 'rate.difference', 'rate.ratio', 'risk.ratio', 'risk.difference', 'hazard.ratio'
+                                                          review_by=input$review_by
         ),
         message = "Executing data pre-processing...", detail = "This step should take a while.", min = 0, max = 1, value = 1)
     })
     
-    
-    ### Definition of 'Reset' button UI output and its consequent triggerings ----
-    observeEvent(input$reset, {
-        #updateSelectInput(session, "summary_by", "Summary By",     choices = c("Patients", "Events"))
-        updateSelectInput(session, "review_by", "Review By",    choices = c("PT", "SOC", "Other"))
-        updateSelectInput(session, "period", "Period", choices = c("Treatment emergent", "AE during entire study",     "Other"))
-        selectInput("ae_filter", "Adverse Event filter(s)", choices=c("Serious","Drug-related","Mild","Moderate","Severe"), selected=NULL, multiple=TRUE, width="75%")
-        updateSelectInput(session, "calculation.type", "Measure of Association", choices = c("Rate Ratio", "Risk Ratio",  "Hazard Ratio", "Risk Difference",   "Rate Difference"))
-        updateCheckboxGroupInput(session, "reference_group", "Reference Group", choices = ARMCD(), selected = ARMCD()[1], inline = F)
-        updateCheckboxGroupInput(session, "comparison_group", "Comparison Group", choices = setdiff(ARMCD(), input$reference_group),  selected = setdiff(ARMCD(), input$reference_group)[1],                       inline = F)
-        #updateTextInput(session, "reference_group_label", "Label for Group A")
-        #updateTextInput(session, "comparison_group_label", "Label for Group B")
-        updatenumericInput(session, "X_ref", "X-axis Reference Line", value = 1)
-        updateSelectInput(session, "pvalue_option", "p-Value Option", choices = c("Unadjusted", "Adjusted"))
-    })
-    
-    
-    
-    
-    
+
     
     # # if get statistics button, x ref, or pvalue changes, auto update plot
     update_plot = reactive({
-        list(input$X_ref, input$pvalue_label,data$statistics)#, #nput$reference_group_label, input$comparison_group_label)
+        list(input$X_ref, input$pvalue_label,data$statistics,input$calculation.type)#, #nput$reference_group_label, input$comparison_group_label)
     })
     
     ### Generation of volcano plot -----------------------------------------------
@@ -166,39 +136,44 @@ app_server <- function(input, output, session) {
         
         output$volcano_plot = renderPlotly({
             volcano.plot(
-                ae_test_data = ae_test_data(),
-                statistics_data = data$statistics,
+                filtered_data = filtered_data(),
+                statistics_data = data$statistics%>% filter(est.type == input$calculation.type),
                 calculation.type = input$calculation.type,
                 reference_group = input$reference_group,
                 comparison_group = input$comparison_group,
-                pvalue_label = input$pvalue_label
+                pvalue_label = input$pvalue_label,
+                X_ref = input$X_ref
             )
         })
         
     })
     
     
-    #     
-    #     #List the details of filtered data that matches the selected SOC/PT
-    #     output$volcano_plot_drill <- DT::renderDataTable({
-    #         s=event_data("plotly_click",source="volcano_plot")
-    #         req(length(s)>0)
-    # 
-    #         volcano_plot_table = plots$volcano_plot$data[as.numeric(s$key),] %>%
-    #             inner_join(plots$volcano_plot_data) %>%
-    #             select(USUBJID,  SITE,   AGE, SEX,   RACE,    ARM, SBJTSTAT,   AEBODSYS, AEDECOD,  AESTDT, AESTDY,  AEENDT,  AESER,  AEONGO,
-    #                    AESEV, AEREL,     AEOUT,TRTEMFL,  STUDYFL)
-    # 
-    #         datatable(volcano_plot_table, extensions = 'Buttons',
-    #                   colnames = c('Subject ID',  'Site',  'Age',   'Sex',   'Race', 'Treatment',  'Subject Status',  'SOC',
-    #                                'PT', 'Onset Date', 'Time to Onset',  'End Date','Serious AE?','Still Ongoing?','Severity',
-    #                                'Causality','Outcome', 'Treatment Emergent?','During Entire Study?'),
-    #                   options = list(dom = 'Bfrtip', buttons = I('colvis'), pageLength = 10)
-    #         )
-    #     }, server = FALSE)
-    # 
-    # 
-    # 
+
+
+    
+        #List the details of filtered data that matches the selected SOC/PT
+        output$volcano_plot_drill <- DT::renderDataTable({
+            s=event_data("plotly_click",source="volcano_plot")
+            req(length(s)>0)
+            ae_test_data = ae_test_data()
+
+            selected_stratification =  data$statistics[s[[2]]+1,"stratification_col"]
+            
+            ae_test_data$stratification_col = ae_test_data[,ifelse(input$review_by != "SOC","AEDECOD","AEBODSYS")]
+            
+            volcano_plot_table = ae_test_data %>% filter(stratification_col==selected_stratification) %>%
+                select(USUBJID, ARMCD, AEBODSYS, AEDECOD,  AESTDT, AESTDY,  AEENDT,  AESER,  AEONGO,AESEV, AEREL,     AEOUT,TRTEMFL,  STUDYFL)
+            
+            colnames(volcano_plot_table) = c('Subject ID', 'Treatment', 'SOC',
+                                             'PT', 'Onset Date', 'Time to Onset',  'End Date','Serious AE?','Still Ongoing?','Severity',
+                                             'Causality','Outcome', 'Treatment Emergent?','During Entire Study?')
+            
+            datatable(volcano_plot_table, extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = I('colvis'), pageLength = 10),rownames= FALSE)
+        })
+
+
+
     #     ### Specifications on the footnote of volcano plot ---------------------------
     output$footnote_UI <- renderText({
         req(nrow(data$statistics)>0)

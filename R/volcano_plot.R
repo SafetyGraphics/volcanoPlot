@@ -3,32 +3,22 @@
 # 1 Function: Generation of volcano plot along with specifications.
 ################################################################################
 
-volcano.plot <- function( ae_test_data = ae_test_data,
+volcano.plot <- function(filtered_data,
                          statistics_data,
                          calculation.type,
                          comparison_group,
                          reference_group,
-                         pvalue_label
+                         pvalue_label,
+                         X_ref
                          )
 {
-
     summary_by="Patients"
     
-
-    
     #if (input$summary_by == "Patients") {
-    sum_subjects = ae_test_data %>% filter(!is.na(RFSTDTC)) %>% group_by(USUBJID) %>% slice(1) %>% ungroup()
+    sum_subjects = filtered_data %>% filter(!is.na(RFSTDTC)) %>% group_by(USUBJID) %>% slice(1) %>% ungroup()
     N1.total = length(unique((sum_subjects %>% filter(ARMCD %in% comparison_group))$USUBJID))
     N2.total = length(unique((sum_subjects %>% filter(ARMCD %in% reference_group))$USUBJID))
-     
-     # favor_text = data.frame(mylabel = c(paste0("<- Favors Comparison Group"," (N=", N1.total, ")"), 
-     #                                     paste0("<- Favors Reference Group"," (N=", N2.total, ")")),
-     #                         est.values = c(min(c(0.05,statistics_data$est.values) - 0.02*(max(c(0.05,statistics_data$est.values), na.rm=T) - min(c(0.05,statistics_data$est.values), na.rm=T))),
-     # )
-     #                         p = min(c(0.05,statistics_data$p) - 0.02*(max(c(0.05,statistics_data$p), na.rm=T) - min(c(0.05,statistics_data$p), na.rm=T)))
-
 #}
-    
     
     
   ### Construction of volcano plot ---------------------------------------------
@@ -42,11 +32,11 @@ volcano.plot <- function( ae_test_data = ae_test_data,
   }
 
   
-      significant_data =  statistics_data %>% group_by() %>% filter(p.adj<=0.05) %>% arrange(desc(p.adj)) %>% slice(1)
+      significant_data =  statistics_data  %>% filter(p.adj<=0.05) %>% arrange(desc(p.adj)) %>% slice(1)
       pvalue_adj0.05 = significant_data$p
 
 
-  p <- ggplot(statistics_data%>% group_by(), aes(est.values, p)) + 
+  p <- ggplot(statistics_data, aes(est.values, p)) + 
     geom_point(aes(size=N, label1=Summary), pch=21, alpha=0.5, fill="skyblue2") + 
     geom_hline(yintercept = 0.05, color = 'grey30', linetype = "dashed") +
     geom_vline(xintercept = ifelse(grepl("Ratio",calculation.type),1,0), color = 'grey30', linetype = "dashed") +
@@ -55,8 +45,7 @@ volcano.plot <- function( ae_test_data = ae_test_data,
     background_grid(major = "xy", minor = "none", color.major="grey92")+
     theme(legend.position = "none")+
     scale_x_continuous(paste(calculation.type,"Comparison Group vs. Reference Group"),expand = expansion(mult = c(0.05, 0.05)))+
-    scale_size_continuous(range = c(2, 12))#+
-      #geom_text(data=favor_text,aes(size=3)
+    scale_size_continuous(range = c(2, 12))
   
   if (nrow(significant_data)!=0){ p = p+geom_hline(yintercept = pvalue_adj0.05, color = 'grey30', linetype = "dotted") }
   
@@ -85,8 +74,5 @@ volcano.plot <- function( ae_test_data = ae_test_data,
                               showarrow = F, xref = 'paper', yref = 'paper',
                               xanchor = 'right', yanchor = 'bottom', xshift = 0, yshift = 0,
                               font = list(size = 12, color = "blue")))
-  
 
 }  
-
-
