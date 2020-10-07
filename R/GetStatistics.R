@@ -87,7 +87,7 @@ GetStatistics_all  = function(filtered_data, data.mapping, review_by) {
                   SAVAL2 = sum((group_col %in% reference_group) * AVAL))
     
     # RATE RATIO
-    result_rate_ratio2 <- data.summary %>% 
+    result_rate_ratio <- data.summary %>% 
         filter(stratification_col %in% data.summary$stratification_col) %>% 
         left_join(data.extend.summary) %>%group_by_all() %>%
         mutate(est.type = "Rate Ratio",
