@@ -1,5 +1,3 @@
 # volcano-plot
 
-![image](https://user-images.githubusercontent.com/62663896/90043322-efd45b00-dc99-11ea-834c-5633c91ea41d.png)
-
-Thanks to the team at Boehringer Ingelheim for developing and releasing the initial code for this tool. In particular, thanks to, Hong Wang, Ke Xiao and  Dennis O'Brien.
+<img width="1759" alt="app example" src="https://user-images.githubusercontent.com/62663896/94355839-a11a2f00-0055-11eb-8d5a-d379fc26ebf4.png">
