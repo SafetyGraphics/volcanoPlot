@@ -9,3 +9,4 @@ settings<-list(
 )
 
 data <- getStats(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, mapping, stat="RR")
+volcanoPlot(data)

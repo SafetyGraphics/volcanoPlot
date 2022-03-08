@@ -17,8 +17,8 @@
 #' stats<-getStats(dfAE=safetyData::adam_ae, dfDemog = safetyData::adam_dm, mapping)
 #' volcanoPlot(stats)
 #' 
-#' @import ggplot
-#' @import plotly
+#' @import ggplot2
+#' @importFrom plotly ggplotly
 #' 
 #' @export
 

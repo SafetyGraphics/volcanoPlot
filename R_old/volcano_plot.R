@@ -63,7 +63,7 @@ volcano.plot <- function(filtered_data,
                             expand = expansion(mult = c(0.05, 0.05)))
   }
   
-  ggplotly(p, source="volcano_plot") %>%
+  ggplotly(p,tooltip = c("Summary"), source="volcano_plot") %>%
       plotly::layout(annotations =
                          list(x = 0, y = 0.02, text = paste0("<- Favors Refrence Group"," (N=", N2.total, ")"),
                               showarrow = F, xref = 'paper', yref = 'paper',
