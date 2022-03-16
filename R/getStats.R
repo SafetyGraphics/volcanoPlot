@@ -1,7 +1,7 @@
 #' Get statistics for AE data
 #'
 #' @param data A data frame with adverse event data and placeholder rows for participants with no AEs
-#' @param mapping mapping
+#' @param settings settings
 #'  
 #' @return a data frame for use in the volcano plot
 #'  
@@ -12,9 +12,8 @@
 #'   reference_group="Placebo",
 #'   comparison_group="Xanomeline High Dose",
 #'   id_col="USUBJID"
-#' )
-#' data<-read.csv('./data/test_data.csv')
-#' getStats(dfAE=safetyData::adam_ae, dfDemog = safetyData::adam_dm, mapping)
+#' ) 
+#' getStats(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings)
 #' 
 #' @import dplyr
 #' @import tidyr
@@ -28,28 +27,29 @@ getStats <- function(dfAE, dfDemog, settings, stat="RR") {
 
     # get # of participants in each group
     N_comparison<-dfDemog %>% 
-    filter(.data[[mapping$group_col]]==mapping$comparison_group) %>% 
-    pull(.data[[mapping$id_col]]) %>%
+    filter(.data[[settings$group_col]]==settings$comparison_group) %>% 
+    pull(.data[[settings$id_col]]) %>%
     unique() %>%
     length()
 
     N_ref<-dfDemog %>% 
-    filter(.data[[mapping$group_col]]==mapping$reference_group) %>% 
-    pull(.data[[mapping$id_col]]) %>%
+    filter(.data[[settings$group_col]]==settings$reference_group) %>% 
+    pull(.data[[settings$id_col]]) %>%
     unique() %>%
     length()
 
     aeCounts <- anly %>% 
-        filter(.data[[mapping$group_col]] %in% c(mapping$comparison_group, mapping$reference_group))%>%
-        group_by(.data[[mapping$stratification_col]],.data[[mapping$group_col]]) %>% 
-        summarize(event=n())%>%
+        filter(.data[[settings$group_col]] %in% c(settings$comparison_group, settings$reference_group))%>%
+        group_by(.data[[settings$stratification_col]],.data[[settings$group_col]]) %>% 
+       # summarize(event=n())%>% do we need this too?
+        summarize(event = length(unique(.data[[settings$id_col]]))) %>% 
         ungroup() %>%
-        spread(.data[[mapping$group_col]],event) %>% 
+        pivot_wider(names_from = .data[[settings$group_col]], values_from = "event") %>% 
         na.omit() %>%
         rename(
-            strata=mapping$stratification_col,
-            eventN_comparison=mapping$comparison_group, 
-            eventN_ref=mapping$reference_group
+            strata=settings$stratification_col,
+            eventN_comparison=settings$comparison_group, 
+            eventN_ref=settings$reference_group
         ) %>%
         mutate(
             eventN_total=eventN_comparison+eventN_ref,
@@ -62,24 +62,16 @@ getStats <- function(dfAE, dfDemog, settings, stat="RR") {
     # calculate stats for each row
     if(stat=="RR"){
         aeCounts <- aeCounts %>% 
-            # run this with purr and then pull estimates? 
-            # mutate(stats=fmsb::riskratio(
-            #     X=.data$eventN_comparison, 
-            #     Y=.data$eventN_ref, 
-            #     m1=.data$N_comarison, 
-            #     m2=.data$N_ref)) %>%
-            mutate(pvalue=fmsb::riskratio(
-                X=.data$eventN_comparison, 
-                Y=.data$eventN_ref, 
-                m1=.data$N_comparison, 
-                m2=.data$N_ref)$`p.value`
-            )%>%
-            mutate(estimate=fmsb::riskratio(
-                X=.data$eventN_comparison, 
-                Y=.data$eventN_ref, 
-                m1=.data$N_comparison, 
-                m2=.data$N_ref)$estimate
-            )%>% 
+            rowwise %>% 
+            mutate(rr = fmsb::riskratio(
+                            X=.data$eventN_comparison, 
+                            Y=.data$eventN_ref, 
+                            m1=.data$N_comparison, 
+                            m2=.data$N_ref) %>% list,
+                pvalue = rr$`p.value`,
+                estimate = rr$estimate) %>% 
+            ungroup %>% 
+            select(-rr) %>% 
             mutate(stat="RR")
     }else if(TRUE){
         message("stat not supported yet :( ")

@@ -1,6 +1,6 @@
 #' Create a volcano plot
 #'
-#' @param data A data frame from getStats()
+#' @param data A data frame from getStats() 
 #' @param plotly wrap output in ggplotly? default=TRUE
 #'  
 #' @return a volcano plot created with ggplot or plotly
@@ -12,9 +12,8 @@
 #'   reference_group="Placebo",
 #'   comparison_group="Xanomeline High Dose",
 #'   id_col="USUBJID"
-#' )
-#' data<-read.csv('./data/test_data.csv')
-#' stats<-getStats(dfAE=safetyData::adam_ae, dfDemog = safetyData::adam_dm, mapping)
+#' ) 
+#' stats<-getStats(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings)
 #' volcanoPlot(stats)
 #' 
 #' @import ggplot2
