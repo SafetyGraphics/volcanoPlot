@@ -7,9 +7,9 @@
 getStats(dfAE, dfDemog, settings, stat = "RR")
 }
 \arguments{
-\item{data}{A data frame with adverse event data and placeholder rows for participants with no AEs}
+\item{settings}{settings}
 
-\item{mapping}{mapping}
+\item{data}{A data frame with adverse event data and placeholder rows for participants with no AEs}
 }
 \value{
 a data frame for use in the volcano plot
@@ -24,8 +24,7 @@ settings<-list(
   reference_group="Placebo",
   comparison_group="Xanomeline High Dose",
   id_col="USUBJID"
-)
-data<-read.csv('./data/test_data.csv')
-getStats(dfAE=safetyData::adam_ae, dfDemog = safetyData::adam_dm, mapping)
+) 
+getStats(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings)
 
 }
