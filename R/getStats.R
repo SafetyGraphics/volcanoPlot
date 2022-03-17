@@ -44,8 +44,7 @@ getStats <- function(dfAE, dfDemog, settings, stat="RR") {
        # summarize(event=n())%>% do we need this too?
         summarize(event = length(unique(.data[[settings$id_col]]))) %>% 
         ungroup() %>%
-        pivot_wider(names_from = .data[[settings$group_col]], values_from = "event") %>% 
-        na.omit() %>%
+        pivot_wider(names_from = .data[[settings$group_col]], values_from = "event", values_fill = 0) %>% 
         rename(
             strata=settings$stratification_col,
             eventN_comparison=settings$comparison_group, 
