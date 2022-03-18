@@ -18,6 +18,7 @@
 #' 
 #' @import ggplot2
 #' @importFrom plotly ggplotly
+#' @importFrom EnhancedVolcano EnhancedVolcano
 #' 
 #' @export
 
@@ -41,9 +42,16 @@
 
 volcanoPlot <- function(data) {
     p <- EnhancedVolcano(toptable = data,
-                         lab = 'strata',
+                         lab = data$strata,
                          x = 'estimate',
                          y = 'pvalue',
-                         pointSize = data$eventN_total)
+                         pointSize = data$eventN_total/2.5,
+                         title = NULL,
+                         subtitle = NULL,
+                         pCutoff = 0.05,
+                         FCcutoff = 1,
+                         labSize = 1,
+                         xlab = 'Comparison Group vs. Reference Group'
+                         )
     return(p)
 }
