@@ -7,6 +7,7 @@
 getStats(dfAE, dfDemog, settings, stat = "RR")
 }
 \arguments{
+<<<<<<< HEAD
 \item{dfAE}{Adverse events dataset structured as 1 record per adverse event per subject}
 
 \item{dfDemog}{Subject-level dataset}
@@ -14,6 +15,11 @@ getStats(dfAE, dfDemog, settings, stat = "RR")
 \item{settings}{Named list of settings}
 
 \item{stat}{Statistic to calculate for AE plot. Options are risk ratio ("RR"), risk difference ("RD"). Defaults to "RR".}
+=======
+\item{settings}{settings}
+
+\item{data}{A data frame with adverse event data and placeholder rows for participants with no AEs}
+>>>>>>> master
 }
 \value{
 a data frame for use in the volcano plot
