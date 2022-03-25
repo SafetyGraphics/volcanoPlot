@@ -22,6 +22,9 @@
 #' @export
 
 getStats <- function(dfAE, dfDemog, settings, stat="RR") {
+    print(settings)
+    head(dfAE)
+    head(dfDemog)
     dfDemog <- dfDemog %>% select(settings[["id_col"]], settings[["group_col"]])
     anly <- dfDemog %>% left_join(dfAE) # left join to keep all rows in dm (even if there were no AEs)
 
@@ -41,7 +44,7 @@ getStats <- function(dfAE, dfDemog, settings, stat="RR") {
     aeCounts <- anly %>% 
         filter(.data[[settings$group_col]] %in% c(settings$comparison_group, settings$reference_group))%>%
         group_by(.data[[settings$stratification_col]],.data[[settings$group_col]]) %>% 
-       # summarize(event=n())%>% do we need this too?
+        # summarize(event=n())%>% do we need this too?
         summarize(event = length(unique(.data[[settings$id_col]]))) %>% 
         ungroup() %>%
         pivot_wider(names_from = .data[[settings$group_col]], values_from = "event") %>% 
