@@ -22,16 +22,24 @@
 #' @export
 
 volcanoPlot <- function(data, plotly = TRUE){
+  
+  # change fill color based on pvalue and estimate
+  data$diffexp <- 'NO'
+  data$diffexp[data$estimate >= 1 & data$pvalue < 0.05] <- 'UP'
+  data$diffexp[data$estimate < 1 & data$pvalue < 0.05] <- 'DOWN'
+  fillcolors <- c('DOWN' = 'sienna2', 'UP' = 'skyblue2', 'NO' = 'grey')
 
   p <- ggplot(data, aes(estimate, -log10(pvalue))) +
-    geom_point(aes(size = eventN_total), pch = 21, alpha = 0.5, fill = "skyblue2") +
+    geom_point(aes(size = eventN_total, fill = diffexp), pch = 21, alpha = 0.5) +
+    scale_size_continuous(range = c(2, 12)) +
+    scale_fill_manual(values = fillcolors) +
     geom_hline(yintercept = -log10(0.05), color = 'grey30', linetype = "dashed") +
     geom_vline(xintercept = 1, color = 'grey30', linetype = "dashed") +
     theme_classic() +
     theme(legend.position = "none") +
     scale_x_continuous("Comparison Group vs. Reference Group",
-                       expand = expansion(mult = c(0.05, 0.05))) +
-    scale_size_continuous(range = c(2, 12))
+                       expand = expansion(mult = c(0.05, 0.05)))
+
 
     if (plotly) {
       return(ggplotly(p))
