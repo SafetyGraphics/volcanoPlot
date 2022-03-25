@@ -42,7 +42,19 @@ volcanoPlot <- function(data, plotly = TRUE){
 
 
     if (plotly) {
-      return(ggplotly(p))
+      return(
+        ggplotly(p)%>%
+          plotly::layout(annotations =
+                           list(x = 0, y = 0.02, text = paste0("<- Favors Refrence Group"," (N=", data$N_ref[1], ")"),
+                                showarrow = F, xref = 'paper', yref = 'paper',
+                                xanchor = 'left', yanchor = 'bottom', xshift = 0, yshift = 0,
+                                font = list(size = 12, color = "blue"))) %>%
+          plotly::layout(annotations =
+                           list(x = .95, y = 0.02, text = paste0("Favors Comparison Group"," (N=", data$N_comparison[1], ") ->"),
+                                showarrow = F, xref = 'paper', yref = 'paper',
+                                xanchor = 'right', yanchor = 'bottom', xshift = 0, yshift = 0,
+                                font = list(size = 12, color = "blue")))
+             )
     } else {
       return(p)
     }
