@@ -21,20 +21,21 @@
 #' 
 #' @export
 
-volcanoPlot <- function(data, plotly=TRUE){
+volcanoPlot <- function(data, plotly = TRUE){
 
-  p <- ggplot(data, aes(estimate, pvalue)) +
-    geom_point(aes(size=eventN_total), pch=21, alpha=0.5, fill="skyblue2") +
-    geom_hline(yintercept = 0.05, color = 'grey30', linetype = "dashed") +
+  p <- ggplot(data, aes(estimate, -log10(pvalue))) +
+    geom_point(aes(size = eventN_total), pch = 21, alpha = 0.5, fill = "skyblue2") +
+    geom_hline(yintercept = -log10(0.05), color = 'grey30', linetype = "dashed") +
     geom_vline(xintercept = 1, color = 'grey30', linetype = "dashed") +
     theme_classic() +
-    theme(legend.position = "none")+
-    scale_x_continuous("Comparison Group vs. Reference Group",expand = expansion(mult = c(0.05, 0.05)))+
+    theme(legend.position = "none") +
+    scale_x_continuous("Comparison Group vs. Reference Group",
+                       expand = expansion(mult = c(0.05, 0.05))) +
     scale_size_continuous(range = c(2, 12))
 
-    if(plotly){
+    if (plotly) {
       return(ggplotly(p))
-    }else{
+    } else {
       return(p)
     }
 }
