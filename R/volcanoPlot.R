@@ -2,6 +2,7 @@
 #'
 #' @param data A data frame from getStats() 
 #' @param plotly wrap output in ggplotly? default=TRUE
+#' @param ... Extra options to change the look of the plot.
 #'  
 #' @return a volcano plot created with ggplot or plotly
 #' 
@@ -21,13 +22,19 @@
 #' 
 #' @export
 
-volcanoPlot <- function(data, plotly = TRUE){
+volcanoPlot <- function(data, plotly = TRUE, ...){
+  
+  opts <- list(...)
+  # print(opts)
+  if(!('fillcol' %in% names(opts))) {
+    opts$fillcol = c('sienna2', 'skyblue2', 'grey')}
   
   # change fill color based on pvalue and estimate
   data$diffexp <- 'NO'
   data$diffexp[data$estimate >= 1 & data$pvalue < 0.05] <- 'UP'
   data$diffexp[data$estimate < 1 & data$pvalue < 0.05] <- 'DOWN'
-  fillcolors <- c('DOWN' = 'sienna2', 'UP' = 'skyblue2', 'NO' = 'grey')
+  # fillcolors <- c('DOWN' = 'sienna2', 'UP' = 'skyblue2', 'NO' = 'grey')
+  fillcolors <- c('DOWN' = opts$fillcol[1], 'UP' = opts$fillcol[2], 'NO' = opts$fillcol[3])
 
   p <- ggplot(data, aes(estimate, -log10(pvalue))) +
     geom_point(aes(size = eventN_total, fill = diffexp), pch = 21, alpha = 0.5) +
