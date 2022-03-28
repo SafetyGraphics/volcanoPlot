@@ -24,15 +24,17 @@
 
 volcanoPlot <- function(data, plotly = TRUE, ...){
   
+  # process options for the plot
   opts <- list(...)
-  # print(opts)
   if(!('fillcol' %in% names(opts))) {
     opts$fillcol = c('sienna2', 'skyblue2', 'grey')}
+  if(!('pcutoff' %in% names(opts))) {opts$pcutoff = 0.05}
+  if(!('ecutoff' %in% names(opts))) {opts$ecutoff = 1}
   
   # change fill color based on pvalue and estimate
   data$diffexp <- 'NO'
-  data$diffexp[data$estimate >= 1 & data$pvalue < 0.05] <- 'UP'
-  data$diffexp[data$estimate < 1 & data$pvalue < 0.05] <- 'DOWN'
+  data$diffexp[data$estimate >= opts$ecutoff & data$pvalue < opts$pcutoff] <- 'UP'
+  data$diffexp[data$estimate < opts$ecutoff & data$pvalue < opts$pcutoff] <- 'DOWN'
   # fillcolors <- c('DOWN' = 'sienna2', 'UP' = 'skyblue2', 'NO' = 'grey')
   fillcolors <- c('DOWN' = opts$fillcol[1], 'UP' = opts$fillcol[2], 'NO' = opts$fillcol[3])
 
@@ -40,8 +42,8 @@ volcanoPlot <- function(data, plotly = TRUE, ...){
     geom_point(aes(size = eventN_total, fill = diffexp), pch = 21, alpha = 0.5) +
     scale_size_continuous(range = c(2, 12)) +
     scale_fill_manual(values = fillcolors) +
-    geom_hline(yintercept = -log10(0.05), color = 'grey30', linetype = "dashed") +
-    geom_vline(xintercept = 1, color = 'grey30', linetype = "dashed") +
+    geom_hline(yintercept = -log10(opts$pcutoff), color = 'grey30', linetype = "dashed") +
+    geom_vline(xintercept = opts$ecutoff, color = 'grey30', linetype = "dashed") +
     theme_classic() +
     theme(legend.position = "none") +
     scale_x_continuous("Comparison Group vs. Reference Group",
