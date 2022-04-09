@@ -1,11 +1,13 @@
 #' Create a volcano plot
 #'
-#' @param data A data frame from getStats() 
+#' @param data A data frame from getStats()
 #' @param plotly wrap output in ggplotly? default=TRUE
-#' @param ... Extra options to change the look of the plot.
-#'  
+#' @param ... Extra options to change the look of the plot. `fillcol =
+#'   c('sienna2', 'skyblue2', 'grey')`: fill colors; `pcutoff = 0.05`: p value
+#'   cutoff; `ecutoff = 1`: estimate cutoff
+#'
 #' @return a volcano plot created with ggplot or plotly
-#' 
+#'
 #' @examples
 #' settings<-list(
 #'   stratification_col="AEBODSYS",
@@ -16,10 +18,10 @@
 #' )
 #' stats<-getStats(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings)
 #' volcanoPlot(stats)
-#' 
+#'
 #' @import ggplot2
 #' @importFrom plotly ggplotly
-#' 
+#'
 #' @export
 
 volcanoPlot <- function(data, plotly = TRUE, ...){
