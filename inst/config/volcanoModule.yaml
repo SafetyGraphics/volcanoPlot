@@ -1,0 +1,14 @@
+env: safetyGraphics
+label: AE Volcano Plot Module
+type: module
+package: volcanoPlot
+export: false
+order: 1
+domain: 
+  - aes
+  - dm
+workflow:
+  ui: volcano_ui
+  server: volcano_server
+links:
+  volcanoPlot: https://github.com/SafetyGraphics/volcanoPlot

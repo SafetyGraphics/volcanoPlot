@@ -10,11 +10,11 @@
 #'
 #' @export
 
-VolcanoApp <- function(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings=NULL,runNow=TRUE){
+volcanoApp <- function(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings=NULL,runNow=TRUE){
     if(is.null(settings)){
         settings<-list(
             aes=list(id_col="USUBJID", bodsys_col="AEBODSYS"),
-            dm=list(id_col="USUBJID", trt_col="ARM",  "treatment_values--group1"="Placebo", "treatment_values--group2" = "Xanomeline High Dose")
+            dm=list(id_col="USUBJID", treatment_col="ARM",  "treatment_values"=list(group1="Placebo", "group2" = "Xanomeline High Dose"))
         )
     }
 
