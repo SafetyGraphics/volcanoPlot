@@ -23,7 +23,7 @@
 #' 
 #' @export
 
-getStats <- function(dfAE, dfDemog, settings, stat="RR") {
+getStats <- function(dfAE, dfDemog, settings, stat="Risk Ratio") {
     print(settings)
     dfDemog <- dfDemog %>% select(settings[["id_col"]], settings[["group_col"]])
     anly <- dfDemog %>% left_join(dfAE) # left join to keep all rows in dm (even if there were no AEs) 
@@ -62,7 +62,7 @@ getStats <- function(dfAE, dfDemog, settings, stat="RR") {
         arrange(-1*eventN_total)
 
     # calculate stats for each row
-    if(stat=="RR"){
+    if(stat=="Risk Ratio"){
         aeCounts <- aeCounts %>% 
             rowwise %>% 
             mutate(result = fmsb::riskratio(
@@ -74,8 +74,8 @@ getStats <- function(dfAE, dfDemog, settings, stat="RR") {
                 estimate = result$estimate) %>% 
             ungroup %>% 
             select(-result) %>% 
-            mutate(stat="RR")
-    } else if (stat=="RD"){
+            mutate(stat="Risk Ratio")
+    } else if (stat=="Risk Difference"){
         aeCounts <- aeCounts %>% 
             rowwise %>% 
             mutate(result = fmsb::riskdifference(
@@ -87,7 +87,7 @@ getStats <- function(dfAE, dfDemog, settings, stat="RR") {
                 estimate = result$estimate) %>% 
             ungroup %>% 
             select(-result) %>% 
-            mutate(stat="RD")
+            mutate(stat="Risk Difference")
     } else if(TRUE){
         message("stat not supported yet :( ")
     }
