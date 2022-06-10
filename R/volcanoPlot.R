@@ -31,10 +31,11 @@ volcanoPlot <- function(data, plotly = TRUE, ...){
   if(!('fillcol' %in% names(opts))) {
     opts$fillcol = c('sienna2', 'skyblue2', 'grey')}
   if(!('pcutoff' %in% names(opts))) {opts$pcutoff = 0.05}
-  if(!('ecutoff' %in% names(opts))) {opts$ecutoff = 1}
+  if(!('ecutoff' %in% names(opts))) {
+    opts$ecutoff <- ifelse(data$stat[1]=="Risk Difference",0,1)
+  }
   
   # change fill color based on pvalue and estimate
-  x_ref <- ifelse(data$stat[1]=="Risk Difference",0,1)
   data$diffexp <- 'NO'
   data$diffexp[data$estimate >= opts$ecutoff & data$pvalue < opts$pcutoff] <- 'UP'
   data$diffexp[data$estimate < opts$ecutoff & data$pvalue < opts$pcutoff] <- 'DOWN'
