@@ -18,7 +18,7 @@ volcano_ui <- function(id) {
             label="Measure of Association", 
             choices = c(
                 "RR", 
-                "Rate Difference",
+                "RD",
                 "Risk Ratio",
                 "Risk Difference", 
                 "Hazard Ratio"

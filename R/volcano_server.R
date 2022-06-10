@@ -32,12 +32,17 @@ volcano_server <- function(input, output, session, params) {
     stats<-reactive({
         print("getting stats")
         getStats(
-            params()$data$aes, 
-            params()$data$dm,
-            mapping()
+            dfAE=params()$data$aes, 
+            dfDemog=params()$data$dm,
+            settings=mapping(),
+            stat=input$calculation_type
         )
     })
         
     # draw the chart
-    output$volcanoPlot <- renderPlotly({volcanoPlot(stats())})
+    output$volcanoPlot <- renderPlotly({
+        volcanoPlot(
+            stats()
+        )
+    })
 }
