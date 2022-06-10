@@ -9,4 +9,14 @@ Description: More about what it does (maybe more than one line)
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
+Imports:
+    fmsb,
+    dplyr,
+    ggplot2,
+    tidyr,
+    shiny, 
+    fmsb, 
+    plotly,
+    safetyGraphics
+

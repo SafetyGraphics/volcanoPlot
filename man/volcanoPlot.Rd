@@ -24,9 +24,8 @@ settings<-list(
   reference_group="Placebo",
   comparison_group="Xanomeline High Dose",
   id_col="USUBJID"
-)
-data<-read.csv('./data/test_data.csv')
-stats<-getStats(dfAE=safetyData::adam_ae, dfDemog = safetyData::adam_dm, mapping)
+) 
+stats<-getStats(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings)
 volcanoPlot(stats)
 
 }
