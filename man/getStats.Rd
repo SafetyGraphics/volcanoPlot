@@ -7,9 +7,13 @@
 getStats(dfAE, dfDemog, settings, stat = "RR")
 }
 \arguments{
-\item{data}{A data frame with adverse event data and placeholder rows for participants with no AEs}
+\item{dfAE}{Adverse events dataset structured as 1 record per adverse event per subject}
 
-\item{mapping}{mapping}
+\item{dfDemog}{Subject-level dataset}
+
+\item{settings}{Named list of settings}
+
+\item{stat}{Statistic to calculate for AE plot. Options are risk ratio ("RR"), risk difference ("RD"). Defaults to "RR".}
 }
 \value{
 a data frame for use in the volcano plot
@@ -24,8 +28,7 @@ settings<-list(
   reference_group="Placebo",
   comparison_group="Xanomeline High Dose",
   id_col="USUBJID"
-)
-data<-read.csv('./data/test_data.csv')
-getStats(dfAE=safetyData::adam_ae, dfDemog = safetyData::adam_dm, mapping)
+) 
+getStats(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings)
 
 }

@@ -1,7 +1,9 @@
 #' Get statistics for AE data
 #'
-#' @param data A data frame with adverse event data and placeholder rows for participants with no AEs
-#' @param settings settings
+#' @param settings Named list of settings
+#' @param dfAE Adverse events dataset structured as 1 record per adverse event per subject
+#' @param dfDemog Subject-level dataset
+#' @param stat Statistic to calculate for AE plot. Options are risk ratio ("RR"), risk difference ("RD"). Defaults to "RR".
 #'  
 #' @return a data frame for use in the volcano plot
 #'  
@@ -17,15 +19,15 @@
 #' 
 #' @import dplyr
 #' @import tidyr
-#' @importFrom fmsb rateratio
+#' @importFrom fmsb riskratio riskdifference
 #' 
 #' @export
 
 getStats <- function(dfAE, dfDemog, settings, stat="RR") {
+    print(settings)
     dfDemog <- dfDemog %>% select(settings[["id_col"]], settings[["group_col"]])
-    anly <- dfDemog %>% left_join(dfAE) # left join to keep all rows in dm (even if there were no AEs)
+    anly <- dfDemog %>% left_join(dfAE) # left join to keep all rows in dm (even if there were no AEs) 
 
-    # get # of participants in each group
     N_comparison<-dfDemog %>% 
     filter(.data[[settings$group_col]]==settings$comparison_group) %>% 
     pull(.data[[settings$id_col]]) %>%
@@ -39,13 +41,13 @@ getStats <- function(dfAE, dfDemog, settings, stat="RR") {
     length()
 
     aeCounts <- anly %>% 
-        filter(.data[[settings$group_col]] %in% c(settings$comparison_group, settings$reference_group))%>%
+        filter(.data[[settings$group_col]] %in% c(settings$comparison_group, settings$reference_group))%>% 
         group_by(.data[[settings$stratification_col]],.data[[settings$group_col]]) %>% 
-       # summarize(event=n())%>% do we need this too?
+        # summarize(event=n())%>% do we need this too?
         summarize(event = length(unique(.data[[settings$id_col]]))) %>% 
         ungroup() %>%
-        pivot_wider(names_from = .data[[settings$group_col]], values_from = "event") %>% 
-        na.omit() %>%
+        na.omit %>% 
+        pivot_wider(names_from = .data[[settings$group_col]], values_from = "event", values_fill = 0) %>% 
         rename(
             strata=settings$stratification_col,
             eventN_comparison=settings$comparison_group, 
@@ -63,17 +65,30 @@ getStats <- function(dfAE, dfDemog, settings, stat="RR") {
     if(stat=="RR"){
         aeCounts <- aeCounts %>% 
             rowwise %>% 
-            mutate(rr = fmsb::riskratio(
+            mutate(result = fmsb::riskratio(
                             X=.data$eventN_comparison, 
                             Y=.data$eventN_ref, 
                             m1=.data$N_comparison, 
                             m2=.data$N_ref) %>% list,
-                pvalue = rr$`p.value`,
-                estimate = rr$estimate) %>% 
+                pvalue = result$`p.value`,
+                estimate = result$estimate) %>% 
             ungroup %>% 
-            select(-rr) %>% 
+            select(-result) %>% 
             mutate(stat="RR")
-    }else if(TRUE){
+    } else if (stat=="RD"){
+        aeCounts <- aeCounts %>% 
+            rowwise %>% 
+            mutate(result = fmsb::riskdifference(
+                a=.data$eventN_comparison, 
+                b=.data$eventN_ref, 
+                N1=.data$N_comparison, 
+                N0=.data$N_ref) %>% list,
+                pvalue = result$`p.value`,
+                estimate = result$estimate) %>% 
+            ungroup %>% 
+            select(-result) %>% 
+            mutate(stat="RD")
+    } else if(TRUE){
         message("stat not supported yet :( ")
     }
 
