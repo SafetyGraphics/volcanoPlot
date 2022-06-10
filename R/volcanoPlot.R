@@ -22,7 +22,6 @@
 #' @export
 
 volcanoPlot <- function(data, plotly = TRUE){
-  
   # change fill color based on pvalue and estimate
   x_ref <- ifelse(data$stat[1]=="Risk Difference",0,1)
   data$diffexp <- 'NO'
@@ -30,7 +29,7 @@ volcanoPlot <- function(data, plotly = TRUE){
   data$diffexp[data$estimate < 1 & data$pvalue < 0.05] <- 'DOWN'
   fillcolors <- c('DOWN' = 'sienna2', 'UP' = 'skyblue2', 'NO' = 'grey')
   
-  p <- ggplot(data, aes(estimate, -log10(pvalue))) +
+  p <- ggplot(data, aes(text=strata, x=estimate, y=-log10(pvalue))) +
     geom_point(aes(size = eventN_total, fill = diffexp), pch = 21, alpha = 0.5) +
     scale_size_continuous(range = c(2, 12)) +
     scale_fill_manual(values = fillcolors) +
@@ -44,7 +43,7 @@ volcanoPlot <- function(data, plotly = TRUE){
 
     if (plotly) {
       return(
-        ggplotly(p)%>%
+        ggplotly(p, tooltip=c("text","x","y","size"))%>%
           plotly::layout(annotations =
                            list(x = 0, y = 0.02, text = paste0("<- Favors Refrence Group"," (N=", data$N_ref[1], ")"),
                                 showarrow = F, xref = 'paper', yref = 'paper',
