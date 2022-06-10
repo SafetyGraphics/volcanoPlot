@@ -2,11 +2,12 @@
 
 Adverse Event Volcano Plot designed for use with {safetyGraphics}. 
 
+<img width="1429" alt="image" src="https://user-images.githubusercontent.com/3680095/172978390-a803a937-f156-4f49-b4e9-bae9bdb84d77.png">
+
 # Sample Code
 Install the package from github with `devtools::install_github('safetyGraphics/volcanoPlot', ref="main")` then run stand-alone app:
 
 ```
-devtools::install_github('safetyGraphics/volcanoPlot', ref="main")
 library(volcanoPlot)
 volcanoApp()
 ```
