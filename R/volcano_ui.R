@@ -1,11 +1,11 @@
-
-#' Safety Outlier Explorer Module - UI
+#' Volcano Plot Module - UI
 #'
 #' @param id module id
 #'
 #' @return returns shiny module UI
 #'
 #' @import shiny
+#' @importFrom plotly plotlyOutput
 #'
 #' @export
 #'

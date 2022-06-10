@@ -2,7 +2,7 @@
 % Please edit documentation in R/volcano_ui.R
 \name{volcano_ui}
 \alias{volcano_ui}
-\title{Safety Outlier Explorer Module - UI}
+\title{Volcano Plot Module - UI}
 \usage{
 volcano_ui(id)
 }
@@ -13,5 +13,5 @@ volcano_ui(id)
 returns shiny module UI
 }
 \description{
-Safety Outlier Explorer Module - UI
+Volcano Plot Module - UI
 }

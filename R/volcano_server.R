@@ -1,4 +1,3 @@
-
 #' Volcano Plot Module - Server
 #'
 #' @param input module input
@@ -9,6 +8,7 @@
 #' @return returns shiny module Server function
 #'
 #' @import shiny
+#' @importFrom plotly renderPlotly
 #'
 #' @export
 
