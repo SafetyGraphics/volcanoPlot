@@ -6,6 +6,7 @@
 #'
 #' @import shiny
 #' @importFrom plotly plotlyOutput
+#' @importFrom DT DTOutput
 #'
 #' @export
 #'
@@ -23,7 +24,11 @@ volcano_ui <- function(id) {
         )
     )
 
-    main <- mainPanel(plotlyOutput(ns("volcanoPlot"), height = "650px"))
+    main <- mainPanel(
+        plotlyOutput(ns("volcanoPlot"), height = "650px"),
+        h3(textOutput(ns("click"))),
+        DTOutput(ns("aeListing"))
+    )
     ui <- fluidPage(
         sidebarLayout(
             sidebar,

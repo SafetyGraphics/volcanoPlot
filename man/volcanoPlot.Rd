@@ -4,12 +4,17 @@
 \alias{volcanoPlot}
 \title{Create a volcano plot}
 \usage{
-volcanoPlot(data, plotly = TRUE)
+volcanoPlot(data, plotly = TRUE, ...)
 }
 \arguments{
 \item{data}{A data frame from getStats()}
 
 \item{plotly}{wrap output in ggplotly? default=TRUE}
+
+\item{...}{Extra options to change the look of the plot. `fillcol =
+c('sienna2', 'skyblue2', 'grey')`: fill colors; `pcutoff = 0.05`: p value
+cutoff; `ecutoff = 1`: estimate cutoff, `GroupLabels = c('Comparison
+Group', 'Reference Group')`: custom group labels.}
 }
 \value{
 a volcano plot created with ggplot or plotly
@@ -20,11 +25,11 @@ Create a volcano plot
 \examples{
 settings<-list(
   stratification_col="AEBODSYS",
-  group_col="ARM", 
+  group_col="ARM",
   reference_group="Placebo",
   comparison_group="Xanomeline High Dose",
   id_col="USUBJID"
-) 
+)
 stats<-getStats(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings)
 volcanoPlot(stats)
 
