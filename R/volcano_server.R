@@ -42,7 +42,11 @@ volcano_server <- function(input, output, session, params) {
     # draw the chart
     output$volcanoPlot <- renderPlotly({
         volcanoPlot(
-            stats()
+            stats(), 
+            GroupLabels = c(
+                mapping()$comparison_group, 
+                mapping()$reference_group
+            )
         )
     })
 }
