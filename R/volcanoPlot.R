@@ -77,21 +77,7 @@ volcanoPlot <- function(data, plotly = TRUE, ...){
                                 showarrow = F, xref = 'paper', yref = 'paper',
                                 xanchor = 'right', yanchor = 'bottom', xshift = 0, yshift = 0,
                                 font = list(size = 12, color = "blue")))
-             ) %>%
-          htmlwidgets::onRender("
-          console.log('hi mom')
-    function(el) { 
-      el.on('plotly_hover', function(d) { 
-        console.log('Hover: ', d); 
-      });
-      el.on('plotly_click', function(d) { 
-        console.log('Click: ', d);
-      });
-      el.on('plotly_selected', function(d) { 
-        console.log('Select: ', d); 
-      });
-    }
-  ")
+             ) 
     } else {
       return(p)
     }
