@@ -34,6 +34,9 @@ volcanoPlot <- function(data, plotly = TRUE, ...){
   if(!('ecutoff' %in% names(opts))) {
     opts$ecutoff <- ifelse(data$stat[1]=="Risk Difference",0,1)
   }
+  if(!('GroupLabels' %in% names(opts))) {
+    opts$GroupLabels <- c('Comparison Group', 'Reference Group')
+  }
   
   # change fill color based on pvalue and estimate
   data$diffexp <- 'NO'
@@ -47,8 +50,8 @@ volcanoPlot <- function(data, plotly = TRUE, ...){
                    text = paste0('Group:  ', strata, '\n',
                                  'Risk Ratio: ', round(estimate, 2), '\n',
                                  'P Value: ', round(pvalue, 2), '\n',
-                                 'Placebo Group: ', eventN_ref, '/', eventN_total, '\n',
-                                 'Comparison Group: ', eventN_comparison, '/', eventN_total, '\n')), 
+                                 opts$GroupLabels[2], ': ', eventN_ref, '/', eventN_total, '\n',
+                                 opts$GroupLabels[1], ': ', eventN_comparison, '/', eventN_total, '\n')), 
                pch = 21, alpha = 0.5) +
     scale_size_continuous(range = c(2, 12)) +
     scale_fill_manual(values = fillcolors) +
@@ -56,7 +59,7 @@ volcanoPlot <- function(data, plotly = TRUE, ...){
     geom_vline(xintercept = opts$ecutoff, color = 'grey30', linetype = "dashed") +
     theme_classic() +
     theme(legend.position = "none") +
-    scale_x_continuous("Comparison Group vs. Reference Group",
+    scale_x_continuous(paste0(opts$GroupLabels[1], ' vs. ', opts$GroupLabels[2]),
                        expand = expansion(mult = c(0.05, 0.05)))
 
 
@@ -64,12 +67,12 @@ volcanoPlot <- function(data, plotly = TRUE, ...){
       return(
         ggplotly(p, tooltip = 'text')%>%
           plotly::layout(annotations =
-                           list(x = 0, y = 0.02, text = paste0("<- Favors Refrence Group"," (N=", data$N_ref[1], ")"),
+                           list(x = 0, y = 0.02, text = paste0("<- Favors ", opts$GroupLabels[2]," (N=", data$N_ref[1], ")"),
                                 showarrow = F, xref = 'paper', yref = 'paper',
                                 xanchor = 'left', yanchor = 'bottom', xshift = 0, yshift = 0,
                                 font = list(size = 12, color = "blue"))) %>%
           plotly::layout(annotations =
-                           list(x = .95, y = 0.02, text = paste0("Favors Comparison Group"," (N=", data$N_comparison[1], ") ->"),
+                           list(x = .95, y = 0.02, text = paste0("Favors ", opts$GroupLabels[1], " (N=", data$N_comparison[1], ") ->"),
                                 showarrow = F, xref = 'paper', yref = 'paper',
                                 xanchor = 'right', yanchor = 'bottom', xshift = 0, yshift = 0,
                                 font = list(size = 12, color = "blue")))
