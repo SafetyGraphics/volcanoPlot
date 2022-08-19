@@ -82,7 +82,7 @@ volcano_server <- function(input, output, session, params) {
         if (is.null(stats_sub())) {
             "Click events appear here (double-click to clear)" }
         else {
-            paste("Showing details for",stats_sub()$eventN_total, "AEs in",stats_sub()$strata)
+            paste("Showing details for AEs in",stats_sub()$strata)
         }
     })
 
