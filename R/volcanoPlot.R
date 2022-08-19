@@ -4,8 +4,9 @@
 #' @param plotly wrap output in ggplotly? default=TRUE
 #' @param ... Extra options to change the look of the plot. `fillcol =
 #'   c('sienna2', 'skyblue2', 'grey')`: fill colors; `pcutoff = 0.05`: p value
-#'   cutoff; `ecutoff = 1`: estimate cutoff
-#'
+#'   cutoff; `ecutoff = 1`: estimate cutoff, `GroupLabels = c('Comparison
+#'   Group', 'Reference Group')`: custom group labels.
+#'   
 #' @return a volcano plot created with ggplot or plotly
 #'
 #' @examples
