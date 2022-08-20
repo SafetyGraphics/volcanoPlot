@@ -20,7 +20,12 @@ volcano_ui <- function(id) {
                 "Risk Ratio",
                 "Risk Difference"
             )
-        )
+            ),
+            selectInput(
+              ns("stratification_values"),
+              label="System Organ Glass / Preferred Term",
+              choices = c("AEBODSYS", "AEDECOD")
+            )
     )
 
     main <- mainPanel(plotlyOutput(ns("volcanoPlot"), height = "650px"))
