@@ -59,7 +59,12 @@ volcano_server <- function(input, output, session, params) {
         if (is.null(plotly_d)) {
             NULL
         }else{
-            stats()[plotly_d$pointNumber+1,]
+          #change pointNumber depending on the curveNumber
+            if (plotly_d[1] == 0 ){ 
+              stats()[plotly_d$pointNumber+4,]
+            }else if (plotly_d[1] == 1 ){
+              stats()[plotly_d$pointNumber+1,]
+            }
         }
     })
 
