@@ -24,11 +24,11 @@ Get statistics for AE data
 \examples{
 settings<-list(
   stratification_col="AEBODSYS",
-  group_col="ARM", 
+  group_col="ARM",
   reference_group="Placebo",
-  comparison_group="Xanomeline High Dose",
+  comparison_group=c("Xanomeline High Dose","Xanomeline Low Dose"),
   id_col="USUBJID"
-) 
+)
 getStats(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings)
 
 }
