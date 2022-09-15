@@ -1,7 +1,6 @@
 #' Create a volcano plot
 #'
 #' @param data A data frame from getStats()
-#' @param plotly wrap output in ggplotly? default=TRUE
 #' @param ... Extra options to change the look of the plot. `fillcol =
 #'   c('sienna2', 'skyblue2', 'grey')`: fill colors; `pcutoff = 0.05`: p value
 #'   cutoff; `ecutoff = 1`: estimate cutoff, `GroupLabels = c('Comparison
@@ -14,7 +13,7 @@
 #'   stratification_col="AEBODSYS",
 #'   group_col="ARM",
 #'   reference_group="Placebo",
-#'   comparison_group="Xanomeline High Dose",
+#'   comparison_group=c("Xanomeline High Dose","Xanomeline Low Dose"),
 #'   id_col="USUBJID"
 #' )
 #' stats<-getStats(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings)
@@ -22,10 +21,11 @@
 #'
 #' @import ggplot2
 #' @importFrom plotly ggplotly
+#' @import crosstalk
 #'
 #' @export
 
-volcanoPlot <- function(data, plotly = TRUE, ...){
+volcanoPlot <- function(data, ...){
   
   # process options for the plot
   opts <- list(...)
@@ -45,42 +45,80 @@ volcanoPlot <- function(data, plotly = TRUE, ...){
   data$diffexp[data$estimate < opts$ecutoff & data$pvalue < opts$pcutoff] <- 'DOWN'
   # fillcolors <- c('DOWN' = 'sienna2', 'UP' = 'skyblue2', 'NO' = 'grey')
   fillcolors <- c('DOWN' = opts$fillcol[1], 'UP' = opts$fillcol[2], 'NO' = opts$fillcol[3])
-
-  p <- ggplot(data, aes(estimate, -log10(pvalue))) +
-    geom_point(aes(size = eventN_total, fill = diffexp, 
-                   text = paste0('Group:  ', strata, '\n',
-                                 'Risk Ratio: ', round(estimate, 2), '\n',
-                                 'P Value: ', round(pvalue, 2), '\n',
-                                 opts$GroupLabels[2], ': ', eventN_ref, '/', eventN_total, '\n',
-                                 opts$GroupLabels[1], ': ', eventN_comparison, '/', eventN_total, '\n')), 
-               pch = 21, alpha = 0.5) +
-    scale_size_continuous(range = c(2, 12)) +
-    scale_fill_manual(values = fillcolors) +
-    geom_hline(yintercept = -log10(opts$pcutoff), color = 'grey30', linetype = "dashed") +
-    geom_vline(xintercept = opts$ecutoff, color = 'grey30', linetype = "dashed") +
-    theme_classic() +
-    theme(legend.position = "none") +
-    scale_x_continuous(paste0(opts$GroupLabels[1], ' vs. ', opts$GroupLabels[2]),
-                       expand = expansion(mult = c(0.05, 0.05)))
-
-
-    if (plotly) {
-      return(
-        ggplotly(p, tooltip = 'text')%>%
-          plotly::layout(annotations =
-                           list(x = 0, y = 0.02, text = paste0("<- Favors ", opts$GroupLabels[2]," (N=", data$N_ref[1], ")"),
-                                showarrow = F, xref = 'paper', yref = 'paper',
-                                xanchor = 'left', yanchor = 'bottom', xshift = 0, yshift = 0,
-                                font = list(size = 12, color = "blue"))) %>%
-          plotly::layout(annotations =
-                           list(x = .95, y = 0.02, text = paste0("Favors ", opts$GroupLabels[1], " (N=", data$N_comparison[1], ") ->"),
-                                showarrow = F, xref = 'paper', yref = 'paper',
-                                xanchor = 'right', yanchor = 'bottom', xshift = 0, yshift = 0,
-                                font = list(size = 12, color = "blue")))
-             ) 
-    } else {
-      return(p)
-    }
+  
+  comp_groups <- unique(data$comp_grp)
+  
+  data_list <- list()
+  for (i in seq_along(comp_groups)) {
+    data_list[[i]] <- filter(data, comp_grp == comp_groups[i])
+  }
+  
+  shared_data <- list()
+  for (i in seq_along(comp_groups)) {
+    shared_data[[i]] <- SharedData$new(data_list[[i]], 
+                                       key = ~strata,
+                                       group = 'group')
+  }
+  
+  print(shared_data$.data)
+  
+  shared_plots <- list()
+  for (i in seq_along(shared_data)) {
+    shared_plots[[i]] <-
+      ggplot(shared_data[[i]], aes(estimate, -log10(pvalue))) +
+      geom_point(aes(size = eventN_total, fill = diffexp,
+                     text = paste0('Group:  ', strata, '\n',
+                                   'Risk Ratio: ', round(estimate, 2), '\n',
+                                   'P Value: ', round(pvalue, 2), '\n',
+                                   opts$GroupLabels[2], ': ', eventN_ref, '/', eventN_total, '\n',
+                                   opts$GroupLabels[1], ': ', eventN_comparison, '/', eventN_total, '\n')),
+                 pch = 21, alpha = 0.5) +
+      scale_size_continuous(range = c(2, 12)) +
+      scale_fill_manual(values = fillcolors) +
+      geom_hline(yintercept = -log10(opts$pcutoff), color = 'grey30', linetype = "dashed") +
+      geom_vline(xintercept = opts$ecutoff, color = 'grey30', linetype = "dashed") +
+      theme_classic() +
+      theme(legend.position = "none") +
+      scale_x_continuous(paste0(opts$GroupLabels[1], ' vs. ', opts$GroupLabels[2]),
+                         expand = expansion(mult = c(0.05, 0.05)))
+    
+    shared_plots[[i]] <- 
+      ggplotly(shared_plots[[i]], tooltip = 'text') %>%
+      plotly::layout(
+        annotations =
+          list(
+            x = 0,
+            y = 0.02,
+            text = paste0("<- Favors ", opts$GroupLabels[2], " (N=", data_list[[i]]$N_ref[1], ")"),
+            showarrow = F,
+            xref = 'paper',
+            yref = 'paper',
+            xanchor = 'left',
+            yanchor = 'bottom',
+            xshift = 0,
+            yshift = 0,
+            font = list(size = 12, color = "blue")
+          )
+      ) %>%
+      plotly::layout(
+        annotations =
+          list(
+            x = .95,
+            y = 0.02,
+            text = paste0("Favors ", opts$GroupLabels[1], " (N=", data_list[[i]]$N_comparison[1], ") ->"),
+            showarrow = F,
+            xref = 'paper',
+            yref = 'paper',
+            xanchor = 'right',
+            yanchor = 'bottom',
+            xshift = 0,
+            yshift = 0,
+            font = list(size = 12, color = "blue")
+          )
+      )
+  }
+  
+  return(bscols(shared_plots))
 }
 
 #' Create a volcano plot with EnhancedVolcano
