@@ -118,7 +118,11 @@ volcanoPlot <- function(data, ...){
       )
   }
   
+  if (length(shared_plots) == 1) {
+    return(shared_plots[[1]])
+  } else {
   return(bscols(shared_plots))
+  }
 }
 
 #' Create a volcano plot with EnhancedVolcano
