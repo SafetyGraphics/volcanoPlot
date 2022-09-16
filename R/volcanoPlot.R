@@ -46,13 +46,16 @@ volcanoPlot <- function(data, ...){
   # fillcolors <- c('DOWN' = 'sienna2', 'UP' = 'skyblue2', 'NO' = 'grey')
   fillcolors <- c('DOWN' = opts$fillcol[1], 'UP' = opts$fillcol[2], 'NO' = opts$fillcol[3])
   
+  # create a vector of comparison groups included in the data
   comp_groups <- unique(data$comp_grp)
   
+  # separate data into a last of data frame for each comparison group
   data_list <- list()
   for (i in seq_along(comp_groups)) {
     data_list[[i]] <- filter(data, comp_grp == comp_groups[i])
   }
   
+  # turn each data frame in the list to a crosstalk SharedData object linked by 'group'
   shared_data <- list()
   for (i in seq_along(comp_groups)) {
     shared_data[[i]] <- SharedData$new(data_list[[i]], 
@@ -60,14 +63,14 @@ volcanoPlot <- function(data, ...){
                                        group = 'group')
   }
   
-  print(shared_data$.data)
-  
+  # turn each of the SharedData data frame into its own volcano plot
   shared_plots <- list()
   for (i in seq_along(shared_data)) {
     shared_plots[[i]] <-
       ggplot(shared_data[[i]], aes(estimate, -log10(pvalue))) +
       geom_point(aes(size = eventN_total, fill = diffexp,
-                     text = paste0('Group:  ', strata, '\n',
+                     # making hover text
+                     text = paste0('Group:  ', strata, '\n', 
                                    'Risk Ratio: ', round(estimate, 2), '\n',
                                    'P Value: ', round(pvalue, 2), '\n',
                                    opts$GroupLabels[2], ': ', eventN_ref, '/', eventN_total, '\n',
@@ -75,15 +78,19 @@ volcanoPlot <- function(data, ...){
                  pch = 21, alpha = 0.5) +
       scale_size_continuous(range = c(2, 12)) +
       scale_fill_manual(values = fillcolors) +
+      # adding cutoff lines
       geom_hline(yintercept = -log10(opts$pcutoff), color = 'grey30', linetype = "dashed") +
       geom_vline(xintercept = opts$ecutoff, color = 'grey30', linetype = "dashed") +
+      # theming and labeling the plot
       theme_classic() +
       theme(legend.position = "none") +
       scale_x_continuous(paste0(opts$GroupLabels[1], ' vs. ', opts$GroupLabels[2]),
                          expand = expansion(mult = c(0.05, 0.05)))
     
+    # turn the plot to an interactive plotly
     shared_plots[[i]] <- 
       ggplotly(shared_plots[[i]], tooltip = 'text') %>%
+      # add text and arrow for favority at the bottom of the plot
       plotly::layout(
         annotations =
           list(
@@ -118,6 +125,8 @@ volcanoPlot <- function(data, ...){
       )
   }
   
+  # return one plot if only one comparison group
+  # return multiple synchronized plot if more than one comp group
   if (length(shared_plots) == 1) {
     return(shared_plots[[1]])
   } else {
