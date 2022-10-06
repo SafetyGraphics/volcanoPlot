@@ -56,8 +56,6 @@ volcano_server <- function(input, output, session, params) {
 
     stats_sub <- reactive({
         plotly_d <- event_data("plotly_click")
-        print("here is your stats()")
-        print(stats())
         
         if (is.null(plotly_d)) {
             NULL
@@ -72,48 +70,50 @@ volcano_server <- function(input, output, session, params) {
     })
 
     ae_sub <- reactive({
-      print('here is your stats_sub()$strata:')
-      print(stats_sub()$strata)
-      print("here is your params()$data$aes:")
-      print(params()$data$aes)
+        print('print stats_sub()$strata:')
+        print(stats_sub()$strata)
+        print("print params()$data$aes:")
+        print(params()$data$aes)
+        
         all<-params()$data$aes
         # subset to selected strata
         sub1<-all[all[params()$settings$aes$bodsys_col]==stats_sub()$strata,]
-        print("sub1")
+        
+        
+        print("print sub1:")
         print(sub1)
-        
-        
-        print("here is groups():")
+        print("print groups():")
         print(groups())
-        print("here is params()$data$dm")
-        print(params()$data$dm)
-        print("here is params()$data$id_col")
-        print(params()$settings$dm$id_col)
-        print("here is dm[dm[params()$settings$dm$treatment_col] in groups:")
+ 
         
         # subset to selected groups
         dm <- params()$data$dm
-        print(dm[dm[params()$settings$dm$treatment_col] == groups(),])
         
-        print("this is ids with filter:")
+        print("print params()$data$dm")
+        print(params()$data$dm)
+        print("print params()$data$id_col")
+        print(params()$settings$dm$id_col)
+        print("print dm[dm[params()$settings$dm$treatment_col] == groups(),]:")
         print( dm[dm[params()$settings$dm$treatment_col] == groups(),] )
-        # data[data$x1 %in% vec, ]   
         
+        # Jeremy's code  
         # ids <- dm[dm[params()$settings$dm$treatment_col] %in% groups(),]%>%
         ids <- dm[dm[params()$settings$dm$treatment_col] == groups(),]%>%
            pull(params()$settings$dm$id_col)
-        print("this is ids")
+        print("print ids object:")
         print(ids)
-        #original code
+        
+        # Jeremy's code
         # sub2<-sub1[sub1[params()$settings$dm$id_col,] %in% ids,]
         
-        print(sub1)
-        print( filter(sub1, sub1[params()$settings$dm$id_col] %in% ids) )
-        sub2<-sub1[sub1[params()$settings$dm$id_col] %in% c(ids),]
-        #examples
+        #examples for subsetting
         # data[data$x1 %in% vec, ] 
-        # filter(data, x1 %in% vec)  
-
+        # filter(data, x1 %in% vec) 
+        # sub2<-sub1[sub1[params()$settings$dm$id_col] %in% c(ids),]
+        sub2<-filter(sub1, params()$settings$dm$id_col %in% c(ids))
+        print("print sub2:")
+        print(sub2)
+ 
         # sub1
         sub2
     })
