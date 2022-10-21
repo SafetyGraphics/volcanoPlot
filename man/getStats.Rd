@@ -4,7 +4,7 @@
 \alias{getStats}
 \title{Get statistics for AE data}
 \usage{
-getStats(dfAE, dfDemog, settings, stat = "RR")
+getStats(dfAE, dfDemog, settings, stat = "Risk Ratio")
 }
 \arguments{
 \item{dfAE}{Adverse events dataset structured as 1 record per adverse event per subject}
