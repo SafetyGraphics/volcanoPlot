@@ -19,7 +19,7 @@ volcano_server <- function(input, output, session, params) {
     mapping<-reactive({
         print(params()$settings)
         list(
-            stratification_col=params()$settings$aes$bodsys_col,
+            stratification_col=input$stratification_values, 
             group_col=params()$settings$dm$treatment_col, 
             reference_group=params()$settings$dm$treatment_values$group1,
             comparison_group=params()$settings$dm$treatment_values$group2,
