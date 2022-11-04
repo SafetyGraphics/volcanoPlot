@@ -10,9 +10,11 @@
 
 volcanoApp <- function(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings=NULL,runNow=TRUE){
     if(is.null(settings)){
+        groups <- unique(dfAE$TRTA)
+      
         settings<-list(
             aes=list(id_col="USUBJID", bodsys_col="AEBODSYS", term_col = 'AEDECOD'),
-            dm=list(id_col="USUBJID", treatment_col="ARM",  "treatment_values"=list(group1="Placebo", "group2" = "Xanomeline High Dose"))
+            dm=list(id_col="USUBJID", treatment_col="ARM",  "treatment_values"=list(group1="Placebo", "group2" = groups[groups != 'Placebo']))
         )
     }
 
