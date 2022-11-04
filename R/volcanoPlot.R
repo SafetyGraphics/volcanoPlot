@@ -27,6 +27,9 @@
 
 volcanoPlot <- function(data, ...){
   
+  print('Outcome of getstats')
+  print(data)
+  
   # process options for the plot
   opts <- list(...)
   if(!('fillcol' %in% names(opts))) {
@@ -35,9 +38,9 @@ volcanoPlot <- function(data, ...){
   if(!('ecutoff' %in% names(opts))) {
     opts$ecutoff <- ifelse(data$stat[1]=="Risk Difference",0,1)
   }
-  if(!('GroupLabels' %in% names(opts))) {
-    opts$GroupLabels <- c('Comparison Group', 'Reference Group')
-  }
+  # if(!('GroupLabels' %in% names(opts))) {
+  #   opts$GroupLabels <- c('Comparison Group', 'Reference Group')
+  # }
   
   # change fill color based on pvalue and estimate
   data$diffexp <- 'NO'
@@ -47,6 +50,7 @@ volcanoPlot <- function(data, ...){
   fillcolors <- c('DOWN' = opts$fillcol[1], 'UP' = opts$fillcol[2], 'NO' = opts$fillcol[3])
   
   # create a vector of comparison groups included in the data
+  ref_group <- unique(data$ref_grp)
   comp_groups <- unique(data$comp_grp)
   
   # separate data into a last of data frame for each comparison group
@@ -66,15 +70,15 @@ volcanoPlot <- function(data, ...){
   # turn each of the SharedData data frame into its own volcano plot
   shared_plots <- list()
   for (i in seq_along(shared_data)) {
-    shared_plots[[i]] <-
+      shared_plots[[i]] <-
       ggplot(shared_data[[i]], aes(estimate, -log10(pvalue))) +
       geom_point(aes(size = eventN_total, fill = diffexp,
                      # making hover text
                      text = paste0('Group:  ', strata, '\n', 
                                    'Risk Ratio: ', round(estimate, 2), '\n',
                                    'P Value: ', round(pvalue, 2), '\n',
-                                   opts$GroupLabels[2], ': ', eventN_ref, '/', eventN_total, '\n',
-                                   opts$GroupLabels[1], ': ', eventN_comparison, '/', eventN_total, '\n')),
+                                   ref_group, ': ', eventN_ref, '/', eventN_total, '\n',
+                                   comp_groups[i], ': ', eventN_comparison, '/', eventN_total, '\n')),
                  pch = 21, alpha = 0.5) +
       scale_size_continuous(range = c(2, 12)) +
       scale_fill_manual(values = fillcolors) +
@@ -84,7 +88,7 @@ volcanoPlot <- function(data, ...){
       # theming and labeling the plot
       theme_classic() +
       theme(legend.position = "none") +
-      scale_x_continuous(paste0(opts$GroupLabels[1], ' vs. ', opts$GroupLabels[2]),
+      scale_x_continuous(paste0(comp_groups[i], ' vs. ', ref_group),
                          expand = expansion(mult = c(0.05, 0.05)))
     
     # turn the plot to an interactive plotly
@@ -96,7 +100,7 @@ volcanoPlot <- function(data, ...){
           list(
             x = 0,
             y = 0.02,
-            text = paste0("<- Favors ", opts$GroupLabels[2], " (N=", data_list[[i]]$N_ref[1], ")"),
+            text = paste0("<- Favors ", ref_group, " (N=", data_list[[i]]$N_ref[1], ")"),
             showarrow = F,
             xref = 'paper',
             yref = 'paper',
@@ -112,7 +116,7 @@ volcanoPlot <- function(data, ...){
           list(
             x = .95,
             y = 0.02,
-            text = paste0("Favors ", opts$GroupLabels[1], " (N=", data_list[[i]]$N_comparison[1], ") ->"),
+            text = paste0("Favors ", comp_groups[i], " (N=", data_list[[i]]$N_comparison[1], ") ->"),
             showarrow = F,
             xref = 'paper',
             yref = 'paper',

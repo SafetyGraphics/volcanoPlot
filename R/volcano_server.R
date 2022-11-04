@@ -39,18 +39,18 @@ volcano_server <- function(input, output, session, params) {
         )
     })
 
-    groups <- reactive({
-        c(
-            mapping()$comparison_group, 
-            mapping()$reference_group
-        )
-    })
+    # groups <- reactive({
+    #     c(
+    #         mapping()$comparison_group, 
+    #         mapping()$reference_group
+    #     )
+    # })
 
     # draw the chart
     output$volcanoPlot <- renderUI({
         plots <- volcanoPlot(
-            stats(), 
-            GroupLabels = groups()
+            stats() 
+            # GroupLabels = groups()
         )
         
         tagList(plots)

@@ -81,6 +81,7 @@ getStats <- function(dfAE, dfDemog, settings, stat="Risk Ratio") {
             ) %>% list,
             pvalue = result$`p.value`,
             estimate = result$estimate,
+            ref_grp = settings$reference_group,
             comp_grp = settings$comparison_group[i]
           ) %>%
           ungroup %>%
@@ -98,6 +99,7 @@ getStats <- function(dfAE, dfDemog, settings, stat="Risk Ratio") {
             ) %>% list,
             pvalue = result$`p.value`,
             estimate = result$estimate,
+            ref_grp = settings$reference_group,
             comp_grp = settings$comparison_group[i]
           ) %>%
           ungroup %>%
