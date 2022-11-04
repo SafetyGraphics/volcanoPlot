@@ -47,11 +47,13 @@ volcano_server <- function(input, output, session, params) {
     })
 
     # draw the chart
-    output$volcanoPlot <- renderPlotly({
-        volcanoPlot(
+    output$volcanoPlot <- renderUI({
+        plots <- volcanoPlot(
             stats(), 
             GroupLabels = groups()
         )
+        
+        tagList(plots)
     })
 
     stats_sub <- reactive({

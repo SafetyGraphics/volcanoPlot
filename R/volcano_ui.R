@@ -30,7 +30,7 @@ volcano_ui <- function(id) {
     )
 
     main <- mainPanel(
-        plotlyOutput(ns("volcanoPlot"), height = "650px"),
+        uiOutput(ns("volcanoPlot"), height = "650px"),
         h3(textOutput(ns("click"))),
         DTOutput(ns("aeListing"))
     )

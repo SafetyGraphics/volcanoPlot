@@ -127,11 +127,13 @@ volcanoPlot <- function(data, ...){
   
   # return one plot if only one comparison group
   # return multiple synchronized plot if more than one comp group
-  if (length(shared_plots) == 1) {
-    return(shared_plots[[1]])
-  } else {
-  return(bscols(shared_plots))
-  }
+  # if (length(shared_plots) == 1) {
+  #   return(shared_plots[[1]])
+  # } else {
+  # return(bscols(shared_plots))
+  # }
+  
+  return(shared_plots)
 }
 
 #' Create a volcano plot with EnhancedVolcano
