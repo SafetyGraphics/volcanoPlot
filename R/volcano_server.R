@@ -14,7 +14,7 @@
 
 volcano_server <- function(input, output, session, params) {
     ns <- session$ns
-    print('starting server')
+    cat('starting server')
     
     ## create a custom mapping for stats calculation
     mapping<-reactive({
@@ -31,7 +31,7 @@ volcano_server <- function(input, output, session, params) {
 
     ## calculate the stats
     stats<-reactive({
-        print("getting stats")
+        cat("getting stats")
         getStats(
             dfAE=params()$data$aes, 
             dfDemog=params()$data$dm,
@@ -75,8 +75,10 @@ volcano_server <- function(input, output, session, params) {
 
     ## create subset of data to show when a point is click
     ae_sub <- reactive({
-        print(paste0('print stats_sub()$strata: ', stats_sub()$strata))
-        print(paste0("print params()$data$aes: ", params()$data$aes))
+        cat('print stats_sub()$strata: ')
+        print(stats_sub()$strata)
+        cat('print params()$data$aes: ')
+        print(params()$data$aes)
         
         all<-params()$data$aes
         # subset to selected strata

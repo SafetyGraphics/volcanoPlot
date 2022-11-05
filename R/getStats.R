@@ -24,7 +24,7 @@
 #' @export
 
 getStats <- function(dfAE, dfDemog, settings, stat="Risk Ratio") {
-    print(settings)
+    # print(settings)
     
     ## Prepare data
     dfDemog <- dfDemog %>% select(settings[["id_col"]], settings[["group_col"]])
