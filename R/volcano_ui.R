@@ -13,7 +13,11 @@
 
 volcano_ui <- function(id) {
     ns <- NS(id)
+    
+    ## Show sidebar 
     sidebar <- sidebarPanel(
+        
+        # Calculation type input
         selectInput(
             ns("calculation_type"),
             label="Measure of Association", 
@@ -22,18 +26,23 @@ volcano_ui <- function(id) {
                 "Risk Difference"
             )
             ),
-            selectInput(
-              ns("stratification_values"),
-              label="System Organ Glass / Preferred Term",
-              choices = c("AEBODSYS", "AEDECOD")
+        
+        # Stratification input
+        selectInput(
+          ns("stratification_values"),
+          label="System Organ Glass / Preferred Term",
+          choices = c("AEBODSYS", "AEDECOD")
             )
     )
 
+    # show main panel with plots, data tables
     main <- mainPanel(
         uiOutput(ns("volcanoPlot"), height = "650px"),
         h3(textOutput(ns("click"))),
         DTOutput(ns("aeListing"))
     )
+    
+    ## bring components together as complete ui
     ui <- fluidPage(
         sidebarLayout(
             sidebar,
@@ -42,6 +51,7 @@ volcano_ui <- function(id) {
             fluid = TRUE
         )
     )
+    
     return(ui)
 }
 

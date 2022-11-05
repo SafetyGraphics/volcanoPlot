@@ -9,6 +9,8 @@
 #' @export
 
 volcanoApp <- function(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings=NULL,runNow=TRUE){
+    
+    ## create default settings when settings is not defined by default
     if(is.null(settings)){
         all_groups <- unique(dfAE$TRTA)
       
@@ -17,14 +19,16 @@ volcanoApp <- function(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_ad
             dm=list(id_col="USUBJID", treatment_col="ARM",  "treatment_values"=list(group1="Placebo", "group2" = all_groups[all_groups != 'Placebo']))
         )
     }
-
+    
+    ## create object containing data and setting to pass to server
     params <- reactive({
         list(
             data=list(aes=dfAE, dm=dfDemog),
             settings=settings
         )
     })
-
+    
+    ## Create app with ui and server
     app <- shinyApp(
         ui =  volcano_ui("vp"),
         server = function(input,output,session){

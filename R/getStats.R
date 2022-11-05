@@ -25,24 +25,31 @@
 
 getStats <- function(dfAE, dfDemog, settings, stat="Risk Ratio") {
     print(settings)
+    
+    ## Prepare data
     dfDemog <- dfDemog %>% select(settings[["id_col"]], settings[["group_col"]])
     anly <- dfDemog %>% left_join(dfAE) # left join to keep all rows in dm (even if there were no AEs) 
     aeCounts <- list()
     
+    ## Run stats for each comparison group vs reference group
+    ## output is a list of stat tables, one for each reference group
     for (i in seq_along(settings$comparison_group)) {
-      
+
+      # count n of comparison group
       N_comparison <- dfDemog %>%
         filter(.data[[settings$group_col]] == settings$comparison_group[i]) %>%
         pull(.data[[settings$id_col]]) %>%
         unique() %>%
         length()
       
+      # count n of reference group
       N_ref <- dfDemog %>%
         filter(.data[[settings$group_col]] == settings$reference_group) %>%
         pull(.data[[settings$id_col]]) %>%
         unique() %>%
         length()
       
+      # create table of numbers for doing stats
       aeCounts[[i]] <- anly %>%
         filter(.data[[settings$group_col]] %in% c(settings$comparison_group[i], settings$reference_group)) %>%
         group_by(.data[[settings$stratification_col]], .data[[settings$group_col]]) %>%
@@ -110,6 +117,7 @@ getStats <- function(dfAE, dfDemog, settings, stat="Risk Ratio") {
       }
       
     }
-
+    
+    ## create one table from a list of tables
     return(bind_rows(aeCounts))
 }   

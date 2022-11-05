@@ -15,7 +15,8 @@
 volcano_server <- function(input, output, session, params) {
     ns <- session$ns
     print('starting server')
-    # create a custom mapping for stats calculation
+    
+    ## create a custom mapping for stats calculation
     mapping<-reactive({
         print(params()$settings)
         list(
@@ -28,7 +29,7 @@ volcano_server <- function(input, output, session, params) {
     })
     print(mapping)
 
-    # calculate the stats
+    ## calculate the stats
     stats<-reactive({
         print("getting stats")
         getStats(
@@ -46,7 +47,7 @@ volcano_server <- function(input, output, session, params) {
     #     )
     # })
 
-    # draw the chart
+    ## Output plots
     output$volcanoPlot <- renderUI({
         plots <- volcanoPlot(
             stats() 
@@ -56,6 +57,7 @@ volcano_server <- function(input, output, session, params) {
         tagList(plots)
     })
 
+    ## Take a clicked point from the plot
     stats_sub <- reactive({
         plotly_d <- event_data("plotly_click")
         
@@ -129,6 +131,6 @@ volcano_server <- function(input, output, session, params) {
         }
     })
 
-    # draw AE listing
+    # Output table of data from the clicked point
     output$aeListing <- renderDT(ae_sub())
 }

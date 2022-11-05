@@ -27,9 +27,6 @@
 
 volcanoPlot <- function(data, ...){
   
-  print('Outcome of getstats')
-  print(data)
-  
   # process options for the plot
   opts <- list(...)
   if(!('fillcol' %in% names(opts))) {
