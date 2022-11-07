@@ -1,12 +1,15 @@
 #' Get statistics for AE data
 #'
 #' @param settings Named list of settings
-#' @param dfAE Adverse events dataset structured as 1 record per adverse event per subject
+#' @param dfAE Adverse events dataset structured as 1 record per adverse event
+#'   per subject
 #' @param dfDemog Subject-level dataset
-#' @param stat Statistic to calculate for AE plot. Options are risk ratio ("RR"), risk difference ("RD"). Defaults to "RR".
-#'  
+#' @param stat Statistic to calculate for AE plot. Options are risk ratio ("RR"
+#'   or "Risk Ratio"), risk difference ("RD" or "Risk Difference"). Defaults to
+#'   "Risk Ratio".
+#'
 #' @return a data frame for use in the volcano plot
-#'  
+#'   
 #' @examples
 #' settings<-list(
 #'   stratification_col="AEBODSYS",
@@ -76,7 +79,7 @@ getStats <- function(dfAE, dfDemog, settings, stat="Risk Ratio") {
         arrange(-1 * eventN_total)
       
       # calculate stats for each row
-      if (stat == "Risk Ratio") {
+      if (stat %in% c("RR", "Risk Ratio")) {
         aeCounts[[i]] <- aeCounts[[i]] %>%
           rowwise %>%
           mutate(
@@ -94,7 +97,7 @@ getStats <- function(dfAE, dfDemog, settings, stat="Risk Ratio") {
           ungroup %>%
           select(-result) %>%
           mutate(stat = "Risk Ratio")
-      } else if (stat == "Risk Difference") {
+      } else if (stat %in% c("RD", "Risk Difference")) {
         aeCounts[[i]] <- aeCounts[[i]] %>%
           rowwise %>%
           mutate(
