@@ -21,7 +21,7 @@
 #'
 #' @import ggplot2
 #' @importFrom plotly ggplotly
-#' @import crosstalk
+#' @importFrom crosstalk SharedData bscols
 #'
 #' @export
 
