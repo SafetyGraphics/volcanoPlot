@@ -37,7 +37,7 @@ volcano_ui <- function(id) {
 
     # show main panel with plots, data tables
     main <- mainPanel(
-        uiOutput(ns("volcanoPlot"), height = "650px"),
+        plotOutput(ns("volcanoPlot"), height = "650px"),
         h3(textOutput(ns("click"))),
         DTOutput(ns("aeListing"))
     )

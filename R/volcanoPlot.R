@@ -27,6 +27,10 @@
 
 volcanoPlot <- function(data, ...){
   
+  print('plotting')
+  print(head(data))
+  print(unique(data$comp_grp))
+
   # process options for the plot
   opts <- list(...)
   if(!('fillcol' %in% names(opts))) {
@@ -43,96 +47,38 @@ volcanoPlot <- function(data, ...){
   data$diffexp <- 'NO'
   data$diffexp[data$estimate >= opts$ecutoff & data$pvalue < opts$pcutoff] <- 'UP'
   data$diffexp[data$estimate < opts$ecutoff & data$pvalue < opts$pcutoff] <- 'DOWN'
-  # fillcolors <- c('DOWN' = 'sienna2', 'UP' = 'skyblue2', 'NO' = 'grey')
   fillcolors <- c('DOWN' = opts$fillcol[1], 'UP' = opts$fillcol[2], 'NO' = opts$fillcol[3])
   
-  # create a vector of comparison groups included in the data
-  ref_group <- unique(data$ref_grp)
-  comp_groups <- unique(data$comp_grp)
-  
-  # separate data into a last of data frame for each comparison group
-  data_list <- list()
-  for (i in seq_along(comp_groups)) {
-    data_list[[i]] <- filter(data, comp_grp == comp_groups[i])
-  }
-  
-  # turn each data frame in the list to a crosstalk SharedData object linked by 'group'
-  shared_data <- list()
-  for (i in seq_along(comp_groups)) {
-    shared_data[[i]] <- SharedData$new(data_list[[i]], 
-                                       key = ~strata,
-                                       group = 'group')
-  }
-  
-  # turn each of the SharedData data frame into its own volcano plot
-  shared_plots <- list()
-  for (i in seq_along(shared_data)) {
-      shared_plots[[i]] <-
-      ggplot(shared_data[[i]], aes(estimate, -log10(pvalue))) +
-      geom_point(aes(size = eventN_total, fill = diffexp,
-                     # making hover text
-                     text = paste0('Group:  ', strata, '\n', 
-                                   'Risk Ratio: ', round(estimate, 2), '\n',
-                                   'P Value: ', round(pvalue, 2), '\n',
-                                   ref_group, ': ', eventN_ref, '/', eventN_total, '\n',
-                                   comp_groups[i], ': ', eventN_comparison, '/', eventN_total, '\n')),
-                 pch = 21, alpha = 0.5) +
-      scale_size_continuous(range = c(2, 12)) +
-      scale_fill_manual(values = fillcolors) +
-      # adding cutoff lines
-      geom_hline(yintercept = -log10(opts$pcutoff), color = 'grey30', linetype = "dashed") +
-      geom_vline(xintercept = opts$ecutoff, color = 'grey30', linetype = "dashed") +
-      # theming and labeling the plot
-      theme_classic() +
-      theme(legend.position = "none") +
-      scale_x_continuous(paste0(comp_groups[i], ' vs. ', ref_group),
-                         expand = expansion(mult = c(0.05, 0.05)))
+  p<-ggplot(data, aes(estimate, -log10(pvalue))) +
+  geom_point(
+    aes(
+      size = eventN_total, 
+      fill = diffexp#,
+      # making hover text
+      # text = paste0(
+      #   'Group:  ', 
+      #   strata, '\n', 
+      #   'Risk Ratio: ', round(estimate, 2), '\n',
+      #   'P Value: ', round(pvalue, 2), '\n',
+      #   ref_grp, ': ', eventN_ref, '/', eventN_total, '\n',
+      #   comp_grp, ': ', eventN_comparison, '/', eventN_total, '\n'
+      # )
+    ),
+  pch = 21, 
+  alpha = 0.5) +
+  scale_size_continuous(range = c(2, 12)) +
+  scale_fill_manual(values = fillcolors) +
+  # adding cutoff lines
+  geom_hline(yintercept = -log10(opts$pcutoff), color = 'grey30', linetype = "dashed") +
+  geom_vline(xintercept = opts$ecutoff, color = 'grey30', linetype = "dashed") +
+  # theming and labeling the plot
+  theme_classic() +
+  theme(legend.position = "none") +
+  scale_x_continuous(
+    #paste0(comp_groups[i], ' vs. ', ref_group),
+    expand = expansion(mult = c(0.05, 0.05))
+  ) +
+  facet_wrap(vars(comp_grp))
     
-    # turn the plot to an interactive plotly
-    shared_plots[[i]] <- 
-      ggplotly(shared_plots[[i]], tooltip = 'text') %>%
-      # add text and arrow for favority at the bottom of the plot
-      plotly::layout(
-        annotations =
-          list(
-            x = 0,
-            y = 0.02,
-            text = paste0("<- Favors ", ref_group, " (N=", data_list[[i]]$N_ref[1], ")"),
-            showarrow = F,
-            xref = 'paper',
-            yref = 'paper',
-            xanchor = 'left',
-            yanchor = 'bottom',
-            xshift = 0,
-            yshift = 0,
-            font = list(size = 12, color = "blue")
-          )
-      ) %>%
-      plotly::layout(
-        annotations =
-          list(
-            x = .95,
-            y = 0.02,
-            text = paste0("Favors ", comp_groups[i], " (N=", data_list[[i]]$N_comparison[1], ") ->"),
-            showarrow = F,
-            xref = 'paper',
-            yref = 'paper',
-            xanchor = 'right',
-            yanchor = 'bottom',
-            xshift = 0,
-            yshift = 0,
-            font = list(size = 12, color = "blue")
-          )
-      )
-  }
-  
-  # return one plot if only one comparison group
-  # return multiple synchronized plot if more than one comp group
-  # if (length(shared_plots) == 1) {
-  #   return(shared_plots[[1]])
-  # } else {
-  # return(bscols(shared_plots))
-  # }
-  
-  return(shared_plots)
-}
+  return(p)
+} 

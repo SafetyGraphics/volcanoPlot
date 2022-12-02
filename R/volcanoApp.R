@@ -34,8 +34,8 @@ volcanoApp <- function(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_ad
         }
     )
 
-    if(runNow)
+    #if(runNow)
         runApp(app)
-    else
-    app
+    #else
+    #app
 }

@@ -58,40 +58,36 @@ volcano_server <- function(input, output, session, params) {
     })
 
     ## Output plots
-    output$volcanoPlot <- renderUI({
-        plots <- volcanoPlot(
-            stats() 
-        )
-        
-        tagList(plots)
+    output$volcanoPlot <- renderPlot({
+        volcanoPlot(stats())
     })
 
-    ## Take a clicked point from the plot
-    stats_sub <- reactive({
-        plotly_d <- event_data("plotly_click")
+    # ## Take a clicked point from the plot
+    # stats_sub <- reactive({
+    #     plotly_d <- event_data("plotly_click")
         
-        if (is.null(plotly_d)) {
-            NULL
-        }else{
-          #change pointNumber depending on the curveNumber
-            if (plotly_d[1] == 0 ){
-              stats()[plotly_d$pointNumber+4,]
-            }else if (plotly_d[1] == 1 ){
-              stats()[plotly_d$pointNumber+1,]
-            }
-        }
-    })
+    #     if (is.null(plotly_d)) {
+    #         NULL
+    #     }else{
+    #       #change pointNumber depending on the curveNumber
+    #         if (plotly_d[1] == 0 ){
+    #           stats()[plotly_d$pointNumber+4,]
+    #         }else if (plotly_d[1] == 1 ){
+    #           stats()[plotly_d$pointNumber+1,]
+    #         }
+    #     }
+    # })
 
     ## create subset of data to show when a point is click
-    ae_sub <- reactive({
-        cat('print stats_sub()$strata: ')
-        print(stats_sub()$strata)
-        cat('print params()$data$aes: ')
-        print(params()$data$aes)
+    # ae_sub <- reactive({
+    #     cat('print stats_sub()$strata: ')
+    #     print(stats_sub()$strata)
+    #     cat('print params()$data$aes: ')
+    #     print(params()$data$aes)
         
-        all<-params()$data$aes
-        # subset to selected strata
-        sub1<-all[all[params()$settings$aes$bodsys_col]==stats_sub()$strata,]
+    #     all<-params()$data$aes
+    #     # subset to selected strata
+    #     sub1<-all[all[params()$settings$aes$bodsys_col]==stats_sub()$strata,]
         
         # print("print sub1:")
         # print(sub1)
@@ -130,18 +126,18 @@ volcano_server <- function(input, output, session, params) {
         # # sub1
         # sub2
         
-        sub1
-    })
+    #     sub1
+    # })
     
     ## Output text instructing how to click and get table
-    output$click <- renderText({
-        if (is.null(stats_sub())) {
-            "Click events appear here (double-click to clear)" }
-        else {
-            paste("Showing details for AEs in",stats_sub()$strata)
-        }
-    })
+    # output$click <- renderText({
+    #     if (is.null(stats_sub())) {
+    #         "Click events appear here (double-click to clear)" }
+    #     else {
+    #         paste("Showing details for AEs in",stats_sub()$strata)
+    #     }
+    # })
 
     # Output table of data from the clicked point
-    output$aeListing <- renderDT(ae_sub())
+    #output$aeListing <- renderDT(ae_sub())
 }
