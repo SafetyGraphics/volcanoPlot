@@ -27,8 +27,6 @@
 #' @export
 
 getStats <- function(dfAE, dfDemog, settings, stat="Risk Ratio") {
-    print('stat settings')
-    print(settings)
     ## Prepare data
     dfDemog <- dfDemog %>% select(settings[["id_col"]], settings[["group_col"]])
     anly <- dfDemog %>% left_join(dfAE) # left join to keep all rows in dm (even if there were no AEs) 

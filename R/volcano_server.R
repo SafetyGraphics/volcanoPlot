@@ -19,7 +19,6 @@ volcano_server <- function(input, output, session, params) {
     
     ## create a custom mapping for stats calculation
     mapping<-reactive({
-        print(params()$settings)
         dm<-params()$data$dm
         reference_group <- params()$settings$dm$treatment_values$group1
         all_groups <- unique(dm[[params()$settings$dm$treatment_col]])
@@ -58,7 +57,10 @@ volcano_server <- function(input, output, session, params) {
 
     ## Output plots
     output$volcanoPlot <- renderPlot({
-        volcanoPlot(stats())
+        volcanoPlot(
+            data=stats(), 
+            highlights=list(col=mapping()$stratification_col, vals=selected_strata())
+        )
     })
 
     stat_data <- reactive({

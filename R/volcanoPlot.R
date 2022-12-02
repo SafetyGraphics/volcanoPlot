@@ -1,6 +1,7 @@
 #' Create a volcano plot
 #'
 #' @param data A data frame from getStats()
+#' @param highlights A list providing a column and values to be highlighted in the chart
 #' @param ... Extra options to change the look of the plot. `fillcol =
 #'   c('sienna2', 'skyblue2', 'grey')`: fill colors; `pcutoff = 0.05`: p value
 #'   cutoff; `ecutoff = 1`: estimate cutoff, `GroupLabels = c('Comparison
@@ -23,12 +24,8 @@
 #'
 #' @export
 
-volcanoPlot <- function(data, ...){
-  
-  print('plotting')
+volcanoPlot <- function(data, highlights = NULL, ...){
   print(head(data))
-  print(unique(data$comp_grp))
-
   # process options for the plot
   opts <- list(...)
   if(!('fillcol' %in% names(opts))) {
@@ -77,6 +74,20 @@ volcanoPlot <- function(data, ...){
     expand = expansion(mult = c(0.05, 0.05))
   ) +
   facet_wrap(vars(comp_grp))
-    
+  
+  # if(!is.null(highlights)){
+  #   print(highlights)
+  #   highlighted_data<-data %>% filter(.data[[highlights$col]] %in% highlights$vals) 
+  #   print(head(highlighted_data))
+  #   p<- p+ geom_point(
+  #     data=highlighted_data,
+  #     aes(
+  #       size = eventN_total, 
+  #       fill = diffexp
+  #     ),
+  #   pch = 21, 
+  #   alpha = 1)
+  # }
+
   return(p)
 } 
