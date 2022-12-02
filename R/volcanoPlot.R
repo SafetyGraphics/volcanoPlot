@@ -20,8 +20,6 @@
 #' volcanoPlot(stats)
 #'
 #' @import ggplot2
-#' @importFrom plotly ggplotly
-#' @importFrom crosstalk SharedData bscols
 #'
 #' @export
 
@@ -48,8 +46,8 @@ volcanoPlot <- function(data, ...){
   data$diffexp[data$estimate >= opts$ecutoff & data$pvalue < opts$pcutoff] <- 'UP'
   data$diffexp[data$estimate < opts$ecutoff & data$pvalue < opts$pcutoff] <- 'DOWN'
   fillcolors <- c('DOWN' = opts$fillcol[1], 'UP' = opts$fillcol[2], 'NO' = opts$fillcol[3])
-  
-  p<-ggplot(data, aes(estimate, -log10(pvalue))) +
+
+  p<-ggplot(data, aes(estimate, logp)) +
   geom_point(
     aes(
       size = eventN_total, 

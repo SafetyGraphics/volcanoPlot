@@ -116,7 +116,7 @@ getStats <- function(dfAE, dfDemog, settings, stat="Risk Ratio") {
     } else if (TRUE) {
       message("stat not supported yet :( ")
     }
-    
+      aeCounts$logp <- -log10(aeCounts$pvalue)
     ## create one table from a list of tables
-    return(bind_rows(aeCounts))
+    return(aeCounts)
 }   

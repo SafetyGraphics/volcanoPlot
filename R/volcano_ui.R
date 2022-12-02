@@ -32,13 +32,18 @@ volcano_ui <- function(id) {
           ns("stratification_values"),
           label="System Organ Glass / Preferred Term",
           choices = c("AEBODSYS", "AEDECOD")
-            )
+        )
     )
 
     # show main panel with plots, data tables
     main <- mainPanel(
-        plotOutput(ns("volcanoPlot"), height = "650px"),
-        h3(textOutput(ns("click"))),
+        plotOutput(
+            ns("volcanoPlot"), 
+            height = "650px", 
+            click = ns("plot_click"),
+            brush = brushOpts(ns("plot_brush"),resetOnNew = TRUE)
+        ),
+        h3(textOutput(ns("info"))),
         DTOutput(ns("aeListing"))
     )
     
