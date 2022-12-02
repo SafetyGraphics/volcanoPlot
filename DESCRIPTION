@@ -9,7 +9,7 @@ Description: More about what it does (maybe more than one line)
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
 Imports:
     fmsb,
     dplyr,
@@ -19,4 +19,3 @@ Imports:
     fmsb, 
     plotly,
     safetyGraphics
-

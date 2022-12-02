@@ -10,6 +10,7 @@
 #' @import shiny
 #' @importFrom plotly renderPlotly event_data
 #' @importFrom DT renderDT
+#' @importFrom purrr map
 #' @export
 
 volcano_server <- function(input, output, session, params) {
@@ -19,39 +20,47 @@ volcano_server <- function(input, output, session, params) {
     ## create a custom mapping for stats calculation
     mapping<-reactive({
         print(params()$settings)
-        list(
+        dm<-params()$data$dm
+        reference_group <- params()$settings$dm$treatment_values$group1
+        all_groups <- unique(dm[[params()$settings$dm$treatment_col]])
+        comparison_groups <- all_groups[all_groups != reference_group]
+        
+        mapping <- list(
             stratification_col=input$stratification_values, 
             group_col=params()$settings$dm$treatment_col, 
-            reference_group=params()$settings$dm$treatment_values$group1,
-            comparison_group=params()$settings$dm$treatment_values$group2,
+            reference_group=reference_group,
+            comparison_group=comparison_groups,
             id_col=params()$settings$dm$id_col
         )  
+        print(mapping)
+        return(mapping)
     })
-    print(mapping)
+
 
     ## calculate the stats
     stats<-reactive({
         cat("getting stats")
-        getStats(
-            dfAE=params()$data$aes, 
-            dfDemog=params()$data$dm,
-            settings=mapping(),
-            stat=input$calculation_type
-        )
-    })
+        
+        stats <- mapping()$comparison_group %>% map(function(comp_group){
+            comp_mapping <- mapping()
+            comp_mapping$comparison_group <- comp_group
+            stats <- getStats(
+                dfAE=params()$data$aes, 
+                dfDemog=params()$data$dm,
+                settings=comp_mapping,
+                stat=input$calculation_type 
+            )
+            return(stats)
+        })%>% 
+        bind_rows
 
-    # groups <- reactive({
-    #     c(
-    #         mapping()$comparison_group, 
-    #         mapping()$reference_group
-    #     )
-    # })
+        print(stats)
+    })
 
     ## Output plots
     output$volcanoPlot <- renderUI({
         plots <- volcanoPlot(
             stats() 
-            # GroupLabels = groups()
         )
         
         tagList(plots)
