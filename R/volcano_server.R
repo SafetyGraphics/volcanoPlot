@@ -59,26 +59,31 @@ volcano_server <- function(input, output, session, params) {
     output$volcanoPlot <- renderPlot({
         volcanoPlot(
             data=stats(), 
-            highlights=list(col=mapping()$stratification_col, vals=selected_strata())
+            highlights=selected_strata()
         )
     })
 
+    #####################################
+    # Reactives for interactive brushing
+    #####################################
+    
+    #filtered stat data
     stat_data <- reactive({
-        req(input$plot_click)
         brushedPoints(stats(), input$plot_brush)
     })
 
+    #selected strata
     selected_strata <- reactive({
-        req(stat_data())
-        unique(stat_data()$strata)
+            unique(stat_data()$strata)
     })
 
+    #filtered ae data
     sub_aes <- reactive({
-        req(input$plot_click)
         raw_aes <- params()$data$aes
         sub_aes <- raw_aes %>% filter(.data[[mapping()$stratification_col]] %in% selected_strata())
     })
 
+    # Linked table + Header    
     output$info <- renderText({
         if( nrow(sub_aes()) > 0 ){
             paste("Showing", nrow(sub_aes()),"AEs for:" ,paste(selected_strata(),collapse=" / "))

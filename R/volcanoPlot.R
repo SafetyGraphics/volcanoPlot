@@ -24,8 +24,8 @@
 #'
 #' @export
 
-volcanoPlot <- function(data, highlights = NULL, ...){
-  print(head(data))
+volcanoPlot <- function(data, highlights, ...){
+
   # process options for the plot
   opts <- list(...)
   if(!('fillcol' %in% names(opts))) {
@@ -43,24 +43,29 @@ volcanoPlot <- function(data, highlights = NULL, ...){
   data$diffexp[data$estimate >= opts$ecutoff & data$pvalue < opts$pcutoff] <- 'UP'
   data$diffexp[data$estimate < opts$ecutoff & data$pvalue < opts$pcutoff] <- 'DOWN'
   fillcolors <- c('DOWN' = opts$fillcol[1], 'UP' = opts$fillcol[2], 'NO' = opts$fillcol[3])
+  
+  data$alpha <- 0.7
+  data$alpha[data$strata %in% highlights] <- 1
+  
+  data <- data %>% mutate(
+    tooltip=paste0(
+      'Group:  ', 
+      strata, '\n', 
+      'Risk Ratio: ', round(estimate, 2), '\n',
+      'P Value: ', round(pvalue, 2), '\n',
+      ref_grp, ': ', eventN_ref, '/', eventN_total, '\n',
+      comp_grp, ': ', eventN_comparison, '/', eventN_total, '\n'
+    )
+  )
 
   p<-ggplot(data, aes(estimate, logp)) +
   geom_point(
     aes(
       size = eventN_total, 
-      fill = diffexp#,
-      # making hover text
-      # text = paste0(
-      #   'Group:  ', 
-      #   strata, '\n', 
-      #   'Risk Ratio: ', round(estimate, 2), '\n',
-      #   'P Value: ', round(pvalue, 2), '\n',
-      #   ref_grp, ': ', eventN_ref, '/', eventN_total, '\n',
-      #   comp_grp, ': ', eventN_comparison, '/', eventN_total, '\n'
-      # )
+      fill = diffexp,
+      alpha = alpha
     ),
-  pch = 21, 
-  alpha = 0.5) +
+  pch = 21) +
   scale_size_continuous(range = c(2, 12)) +
   scale_fill_manual(values = fillcolors) +
   # adding cutoff lines
@@ -74,20 +79,17 @@ volcanoPlot <- function(data, highlights = NULL, ...){
     expand = expansion(mult = c(0.05, 0.05))
   ) +
   facet_wrap(vars(comp_grp))
+
+
+    # p<- p+ geom_point(
+    #   data=data %>% filter(.data$strata %in% highlights) ,
+    #   aes(
+    #     size = eventN_total, 
+    #     fill = diffexp
+    #   ),
+    # pch = 21, 
+    # alpha = 1)
   
-  # if(!is.null(highlights)){
-  #   print(highlights)
-  #   highlighted_data<-data %>% filter(.data[[highlights$col]] %in% highlights$vals) 
-  #   print(head(highlighted_data))
-  #   p<- p+ geom_point(
-  #     data=highlighted_data,
-  #     aes(
-  #       size = eventN_total, 
-  #       fill = diffexp
-  #     ),
-  #   pch = 21, 
-  #   alpha = 1)
-  # }
 
   return(p)
 } 

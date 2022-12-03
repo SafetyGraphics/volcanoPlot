@@ -29,9 +29,9 @@ volcano_ui <- function(id) {
         
         # Stratification input
         selectInput(
-          ns("stratification_values"),
-          label="System Organ Glass / Preferred Term",
-          choices = c("AEBODSYS", "AEDECOD")
+            ns("stratification_values"),
+            label="System Organ Glass / Preferred Term",
+            choices = c("AEBODSYS", "AEDECOD")
         )
     )
 
@@ -41,7 +41,7 @@ volcano_ui <- function(id) {
             ns("volcanoPlot"), 
             height = "650px", 
             click = ns("plot_click"),
-            brush = brushOpts(ns("plot_brush"),resetOnNew = TRUE)
+            brush = brushOpts(ns("plot_brush"),resetOnNew = FALSE)
         ),
         h3(textOutput(ns("info"))),
         DTOutput(ns("aeListing"))
