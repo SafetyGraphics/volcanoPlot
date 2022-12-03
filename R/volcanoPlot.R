@@ -46,17 +46,6 @@ volcanoPlot <- function(data, highlights, ...){
   
   data$alpha <- 0.7
   data$alpha[data$strata %in% highlights] <- 1
-  
-  data <- data %>% mutate(
-    tooltip=paste0(
-      'Group:  ', 
-      strata, '\n', 
-      'Risk Ratio: ', round(estimate, 2), '\n',
-      'P Value: ', round(pvalue, 2), '\n',
-      ref_grp, ': ', eventN_ref, '/', eventN_total, '\n',
-      comp_grp, ': ', eventN_comparison, '/', eventN_total, '\n'
-    )
-  )
 
   p<-ggplot(data, aes(estimate, logp)) +
   geom_point(

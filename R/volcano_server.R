@@ -63,10 +63,16 @@ volcano_server <- function(input, output, session, params) {
         )
     })
 
-    #####################################
-    # Reactives for interactive brushing
-    #####################################
-    
+    ############################################
+    # Reactives for interactive brushing/hover
+    ############################################
+
+    #hover data
+    hover_data <- reactive({
+        print('hovered')
+        nearPoints(stats(), input$plot_hover)
+    })
+
     #filtered stat data
     stat_data <- reactive({
         brushedPoints(stats(), input$plot_brush)
@@ -83,7 +89,15 @@ volcano_server <- function(input, output, session, params) {
         sub_aes <- raw_aes %>% filter(.data[[mapping()$stratification_col]] %in% selected_strata())
     })
 
+
+
+    ##########################
     # Linked table + Header    
+    #########################
+    output$footnote <- renderText({
+        paste(hover_data()$tooltip,collapse="/n----------/n")
+    })
+
     output$info <- renderText({
         if( nrow(sub_aes()) > 0 ){
             paste("Showing", nrow(sub_aes()),"AEs for:" ,paste(selected_strata(),collapse=" / "))

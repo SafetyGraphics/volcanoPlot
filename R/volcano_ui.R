@@ -40,9 +40,10 @@ volcano_ui <- function(id) {
         plotOutput(
             ns("volcanoPlot"), 
             height = "650px", 
-            click = ns("plot_click"),
+            hover = ns("plot_hover"),
             brush = brushOpts(ns("plot_brush"),resetOnNew = FALSE)
         ),
+        textOutput(ns("footnote")),
         h3(textOutput(ns("info"))),
         DTOutput(ns("aeListing"))
     )

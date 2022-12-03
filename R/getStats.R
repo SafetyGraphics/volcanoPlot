@@ -114,7 +114,18 @@ getStats <- function(dfAE, dfDemog, settings, stat="Risk Ratio") {
     } else if (TRUE) {
       message("stat not supported yet :( ")
     }
-      aeCounts$logp <- -log10(aeCounts$pvalue)
+    aeCounts<-aeCounts %>% 
+      mutate(logp = -log10(pvalue)) %>%
+      mutate(
+        tooltip=paste0(
+          'Group:  ', 
+          strata, '\n', 
+          'Risk Ratio: ', round(estimate, 2), '\n',
+          'P Value: ', round(pvalue, 2), '\n',
+          ref_grp, ': ', eventN_ref, '/', eventN_total, '\n',
+          comp_grp, ': ', eventN_comparison, '/', eventN_total, '\n'
+        )
+      )
     ## create one table from a list of tables
     return(aeCounts)
 }   
