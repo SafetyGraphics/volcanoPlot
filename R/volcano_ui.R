@@ -40,12 +40,24 @@ volcano_ui <- function(id) {
         plotOutput(
             ns("volcanoPlot"), 
             height = "650px", 
-            hover = ns("plot_hover"),
+            hover = hoverOpts(ns("plot_hover"),delay=50),
             brush = brushOpts(ns("plot_brush"),resetOnNew = FALSE)
         ),
-        textOutput(ns("footnote")),
-        h3(textOutput(ns("info"))),
-        DTOutput(ns("aeListing"))
+        tags$small(wellPanel(htmlOutput(ns("footnote")))),
+        
+        tabsetPanel(id=ns("tableWrap"), type = "tabs",
+            tabPanel("Comparisons", 
+                div(
+                    h5(htmlOutput(ns("infoComp"))),
+                    DTOutput(ns("compListing")))
+                ),
+            tabPanel("Adverse Events", 
+                div(
+                    h5(htmlOutput(ns("infoAE"))),
+                    DTOutput(ns("aeListing"))
+                )
+            )
+        )  
     )
     
     ## bring components together as complete ui

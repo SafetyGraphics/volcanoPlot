@@ -34,10 +34,7 @@ volcanoPlot <- function(data, highlights, ...){
   if(!('ecutoff' %in% names(opts))) {
     opts$ecutoff <- ifelse(data$stat[1]=="Risk Difference",0,1)
   }
-  # if(!('GroupLabels' %in% names(opts))) {
-  #   opts$GroupLabels <- c('Comparison Group', 'Reference Group')
-  # }
-  
+
   # change fill color based on pvalue and estimate
   data$diffexp <- 'NO'
   data$diffexp[data$estimate >= opts$ecutoff & data$pvalue < opts$pcutoff] <- 'UP'
@@ -57,28 +54,21 @@ volcanoPlot <- function(data, highlights, ...){
   pch = 21) +
   scale_size_continuous(range = c(2, 12)) +
   scale_fill_manual(values = fillcolors) +
+  
   # adding cutoff lines
   geom_hline(yintercept = -log10(opts$pcutoff), color = 'grey30', linetype = "dashed") +
   geom_vline(xintercept = opts$ecutoff, color = 'grey30', linetype = "dashed") +
+  
   # theming and labeling the plot
-  theme_classic() +
+  theme_bw() + 
   theme(legend.position = "none") +
   scale_x_continuous(
-    #paste0(comp_groups[i], ' vs. ', ref_group),
     expand = expansion(mult = c(0.05, 0.05))
   ) +
+  theme(aspect.ratio = 1) + 
+
+  # Facet on comparison
   facet_wrap(vars(comp_grp))
-
-
-    # p<- p+ geom_point(
-    #   data=data %>% filter(.data$strata %in% highlights) ,
-    #   aes(
-    #     size = eventN_total, 
-    #     fill = diffexp
-    #   ),
-    # pch = 21, 
-    # alpha = 1)
-  
 
   return(p)
 } 

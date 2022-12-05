@@ -118,12 +118,11 @@ getStats <- function(dfAE, dfDemog, settings, stat="Risk Ratio") {
       mutate(logp = -log10(pvalue)) %>%
       mutate(
         tooltip=paste0(
-          'Group:  ', 
-          strata, '\n', 
-          'Risk Ratio: ', round(estimate, 2), '\n',
-          'P Value: ', round(pvalue, 2), '\n',
-          ref_grp, ': ', eventN_ref, '/', eventN_total, '\n',
-          comp_grp, ': ', eventN_comparison, '/', eventN_total, '\n'
+          'Group:  ', strata, '<br/>', 
+          'Risk Ratio: ', round(estimate, 2), '<br/>',
+          'P Value: ', round(pvalue, 2), '<br/>',
+          ref_grp, ': ', eventN_ref, '/', eventN_total, '<br/>',
+          comp_grp, ': ', eventN_comparison, '/', eventN_total, '<br/>'
         )
       )
     ## create one table from a list of tables

@@ -73,44 +73,75 @@ volcano_server <- function(input, output, session, params) {
         nearPoints(stats(), input$plot_hover)
     })
 
-    #filtered stat data
-    stat_data <- reactive({
-        brushedPoints(stats(), input$plot_brush)
-    })
-
     #selected strata
     selected_strata <- reactive({
-            unique(stat_data()$strata)
+        unique(brushedPoints(stats(), input$plot_brush)$strata)
     })
 
     #filtered ae data
     sub_aes <- reactive({
+        req(selected_strata())
         raw_aes <- params()$data$aes
         sub_aes <- raw_aes %>% filter(.data[[mapping()$stratification_col]] %in% selected_strata())
     })
 
-
+    #filtered comparison data
+    sub_stat <- reactive({
+        req(selected_strata())
+        stats()[stats()$strata %in% selected_strata(),]
+    })
+    
+    observeEvent(selected_strata(),{ 
+        print("show/hide")
+        print(ns('tableWrap'))
+        if(length(selected_strata()) == 0){
+            print("hide")
+            shinyjs::hide(id = "tableWrap")
+        }else{
+            print("show")
+            shinyjs::show(id = "tableWrap")
+        }
+    })
 
     ##########################
     # Linked table + Header    
     #########################
-    output$footnote <- renderText({
-        paste(hover_data()$tooltip,collapse="/n----------/n")
+    output$footnote <- renderUI({
+        if( nrow(hover_data()) > 0 ){
+            HTML(paste(hover_data()$tooltip,collapse="<hr>"))
+        }else{
+            'Hover to see point details'
+        }
     })
 
-    output$info <- renderText({
-        if( nrow(sub_aes()) > 0 ){
-            paste("Showing", nrow(sub_aes()),"AEs for:" ,paste(selected_strata(),collapse=" / "))
+    output$infoComp <- renderUI({
+        if( length(selected_strata()) == 1 ){
+            HTML(paste(nrow(sub_stat()),"comparisons from <strong>", selected_strata(),"</strong>"))
+        }else if(length(selected_strata() > 1)){
+            HTML(paste(nrow(sub_stat()), "comparisons from <strong>", length(selected_strata()),"groups </strong>"))
         }else{
-            paste("Brush chart to see AE listing")
+            paste("Brush to see listings")
+        }
+    })
+
+    output$compListing <- renderDT({
+        req(sub_stat())
+        sub_stat() %>% select(-tooltip)
+    })
+
+    output$infoAE <- renderUI({
+        if( length(selected_strata()) == 1 ){
+            HTML(paste(nrow(sub_aes()),"AEs from <strong>", selected_strata(),"</strong>"))
+        }else if(length(selected_strata() > 1)){
+            HTML(paste(nrow(sub_aes()), "AEs from <strong>", length(selected_strata()),"groups </strong>"))
+        }else{
+            paste("Brush to see listings")
         }
     })
 
     output$aeListing <- renderDT({
-        req(selected_strata())
-        raw_aes <- params()$data$aes
-        sub_aes <- raw_aes %>% filter(.data[[mapping()$stratification_col]] %in% selected_strata())
-
-        return(sub_aes)
+        req(sub_aes())
+        sub_aes()
     })
+    
 }
