@@ -16,7 +16,7 @@
 volcano_server <- function(input, output, session, params) {
     ns <- session$ns
     cat('starting server')
-    
+
     ## create a custom mapping for stats calculation
     mapping<-reactive({
         dm<-params()$data$dm
@@ -30,16 +30,29 @@ volcano_server <- function(input, output, session, params) {
             reference_group=reference_group,
             comparison_group=comparison_groups,
             id_col=params()$settings$dm$id_col
-        )  
-
+        )
         return(mapping)
     })
+    
+    strata_cols <- reactive({
+        c(
+            params()$settings$aes$bodsys_col,
+            params()$settings$aes$term_col
+        )
+    })
 
+    observe({
+        updateSelectizeInput(
+            session,
+            inputId = 'stratification_values',
+            choices = strata_cols(),
+            selected = strata_cols()[[1]]
+        )   
+    })
 
-    ## calculate the stats
+    # calculate the stats
     stats<-reactive({
-        cat("getting stats")
-        
+        req(mapping())
         stats <- mapping()$comparison_group %>% 
             map(function(comp_group){
                 comp_mapping <- mapping()
@@ -63,18 +76,18 @@ volcano_server <- function(input, output, session, params) {
         )
     })
 
-    ############################################
-    # Reactives for interactive brushing/hover
-    ############################################
+    # ############################################
+    # # Reactives for interactive brushing/hover
+    # ############################################
 
     #hover data
     hover_data <- reactive({
-        print('hovered')
         nearPoints(stats(), input$plot_hover)
     })
 
     #selected strata
     selected_strata <- reactive({
+        req(stats)
         unique(brushedPoints(stats(), input$plot_brush)$strata)
     })
 
@@ -89,18 +102,6 @@ volcano_server <- function(input, output, session, params) {
     sub_stat <- reactive({
         req(selected_strata())
         stats()[stats()$strata %in% selected_strata(),]
-    })
-    
-    observeEvent(selected_strata(),{ 
-        print("show/hide")
-        print(ns('tableWrap'))
-        if(length(selected_strata()) == 0){
-            print("hide")
-            shinyjs::hide(id = "tableWrap")
-        }else{
-            print("show")
-            shinyjs::show(id = "tableWrap")
-        }
     })
 
     ##########################

@@ -18,7 +18,7 @@ volcano_ui <- function(id) {
     sidebar <- sidebarPanel(
         
         # Calculation type input
-        selectInput(
+        selectizeInput(
             ns("calculation_type"),
             label="Measure of Association", 
             choices = c(
@@ -28,10 +28,10 @@ volcano_ui <- function(id) {
             ),
         
         # Stratification input
-        selectInput(
+        selectizeInput(
             ns("stratification_values"),
             label="System Organ Glass / Preferred Term",
-            choices = c("AEBODSYS", "AEDECOD")
+            choices = c()
         )
     )
 

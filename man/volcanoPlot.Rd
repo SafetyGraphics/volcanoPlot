@@ -4,10 +4,12 @@
 \alias{volcanoPlot}
 \title{Create a volcano plot}
 \usage{
-volcanoPlot(data, ...)
+volcanoPlot(data, highlights, ...)
 }
 \arguments{
 \item{data}{A data frame from getStats()}
+
+\item{highlights}{A list providing a column and values to be highlighted in the chart}
 
 \item{...}{Extra options to change the look of the plot. `fillcol =
 c('sienna2', 'skyblue2', 'grey')`: fill colors; `pcutoff = 0.05`: p value
