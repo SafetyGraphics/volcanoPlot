@@ -13,8 +13,12 @@
 
 volcano_ui <- function(id) {
     ns <- NS(id)
+    
+    ## Show sidebar 
     sidebar <- sidebarPanel(
-        selectInput(
+        
+        # Calculation type input
+        selectizeInput(
             ns("calculation_type"),
             label="Measure of Association", 
             choices = c(
@@ -22,18 +26,41 @@ volcano_ui <- function(id) {
                 "Risk Difference"
             )
             ),
-            selectInput(
-              ns("stratification_values"),
-              label="System Organ Glass / Preferred Term",
-              choices = c("AEBODSYS", "AEDECOD")
-            )
+        
+        # Stratification input
+        selectizeInput(
+            ns("stratification_values"),
+            label="System Organ Glass / Preferred Term",
+            choices = c()
+        )
     )
 
+    # show main panel with plots, data tables
     main <- mainPanel(
-        plotlyOutput(ns("volcanoPlot"), height = "650px"),
-        h3(textOutput(ns("click"))),
-        DTOutput(ns("aeListing"))
+        plotOutput(
+            ns("volcanoPlot"), 
+            height = "650px", 
+            hover = hoverOpts(ns("plot_hover"),delay=50),
+            brush = brushOpts(ns("plot_brush"),resetOnNew = FALSE)
+        ),
+        tags$small(wellPanel(htmlOutput(ns("footnote")))),
+        
+        tabsetPanel(id=ns("tableWrap"), type = "tabs",
+            tabPanel("Comparisons", 
+                div(
+                    h5(htmlOutput(ns("infoComp"))),
+                    DTOutput(ns("compListing")))
+                ),
+            tabPanel("Adverse Events", 
+                div(
+                    h5(htmlOutput(ns("infoAE"))),
+                    DTOutput(ns("aeListing"))
+                )
+            )
+        )  
     )
+    
+    ## bring components together as complete ui
     ui <- fluidPage(
         sidebarLayout(
             sidebar,
@@ -42,6 +69,7 @@ volcano_ui <- function(id) {
             fluid = TRUE
         )
     )
+    
     return(ui)
 }
 

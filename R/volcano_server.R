@@ -10,122 +10,139 @@
 #' @import shiny
 #' @importFrom plotly renderPlotly event_data
 #' @importFrom DT renderDT
+#' @importFrom purrr map
 #' @export
 
 volcano_server <- function(input, output, session, params) {
     ns <- session$ns
-    print('starting server')
-    # create a custom mapping for stats calculation
+    cat('starting server')
+
+    ## create a custom mapping for stats calculation
     mapping<-reactive({
-        print(params()$settings)
-        list(
+        dm<-params()$data$dm
+        reference_group <- params()$settings$dm$treatment_values$group1
+        all_groups <- unique(dm[[params()$settings$dm$treatment_col]])
+        comparison_groups <- all_groups[all_groups != reference_group]
+        
+        mapping <- list(
             stratification_col=input$stratification_values, 
             group_col=params()$settings$dm$treatment_col, 
-            reference_group=params()$settings$dm$treatment_values$group1,
-            comparison_group=params()$settings$dm$treatment_values$group2,
+            reference_group=reference_group,
+            comparison_group=comparison_groups,
             id_col=params()$settings$dm$id_col
-        )  
+        )
+        return(mapping)
     })
-    print(mapping)
+    
+    strata_cols <- reactive({
+        c(
+            params()$settings$aes$bodsys_col,
+            params()$settings$aes$term_col
+        )
+    })
+
+    observe({
+        updateSelectizeInput(
+            session,
+            inputId = 'stratification_values',
+            choices = strata_cols(),
+            selected = strata_cols()[[1]]
+        )   
+    })
 
     # calculate the stats
     stats<-reactive({
-        print("getting stats")
-        getStats(
-            dfAE=params()$data$aes, 
-            dfDemog=params()$data$dm,
-            settings=mapping(),
-            stat=input$calculation_type
-        )
+        req(mapping())
+        stats <- mapping()$comparison_group %>% 
+            map(function(comp_group){
+                comp_mapping <- mapping()
+                comp_mapping$comparison_group <- comp_group
+                stats <- getStats(
+                    dfAE=params()$data$aes, 
+                    dfDemog=params()$data$dm,
+                    settings=comp_mapping,
+                    stat=input$calculation_type 
+                )
+                return(stats)
+            })%>% 
+            bind_rows
     })
 
-    groups <- reactive({
-        c(
-            mapping()$comparison_group, 
-            mapping()$reference_group
-        )
-    })
-
-    # draw the chart
-    output$volcanoPlot <- renderPlotly({
+    ## Output plots
+    output$volcanoPlot <- renderPlot({
         volcanoPlot(
-            stats(), 
-            GroupLabels = groups()
+            data=stats(), 
+            highlights=selected_strata()
         )
     })
 
-    stats_sub <- reactive({
-        plotly_d <- event_data("plotly_click")
-        
-        if (is.null(plotly_d)) {
-            NULL
+    # ############################################
+    # # Reactives for interactive brushing/hover
+    # ############################################
+
+    #hover data
+    hover_data <- reactive({
+        nearPoints(stats(), input$plot_hover)
+    })
+
+    #selected strata
+    selected_strata <- reactive({
+        req(stats)
+        unique(brushedPoints(stats(), input$plot_brush)$strata)
+    })
+
+    #filtered ae data
+    sub_aes <- reactive({
+        req(selected_strata())
+        raw_aes <- params()$data$aes
+        sub_aes <- raw_aes %>% filter(.data[[mapping()$stratification_col]] %in% selected_strata())
+    })
+
+    #filtered comparison data
+    sub_stat <- reactive({
+        req(selected_strata())
+        stats()[stats()$strata %in% selected_strata(),]
+    })
+
+    ##########################
+    # Linked table + Header    
+    #########################
+    output$footnote <- renderUI({
+        if( nrow(hover_data()) > 0 ){
+            HTML(paste(hover_data()$tooltip,collapse="<hr>"))
         }else{
-          #change pointNumber depending on the curveNumber
-            if (plotly_d[1] == 0 ){
-              stats()[plotly_d$pointNumber+4,]
-            }else if (plotly_d[1] == 1 ){
-              stats()[plotly_d$pointNumber+1,]
-            }
+            'Hover to see point details'
         }
     })
 
-    ae_sub <- reactive({
-        print('print stats_sub()$strata:')
-        print(stats_sub()$strata)
-        print("print params()$data$aes:")
-        print(params()$data$aes)
-        
-        all<-params()$data$aes
-        # subset to selected strata
-        sub1<-all[all[params()$settings$aes$bodsys_col]==stats_sub()$strata,]
-        
-        
-        print("print sub1:")
-        print(sub1)
-        print("print groups():")
-        print(groups())
- 
-        
-        # subset to selected groups
-        dm <- params()$data$dm
-        
-        print("print params()$data$dm")
-        print(params()$data$dm)
-        print("print params()$data$id_col")
-        print(params()$settings$dm$id_col)
-        print("print dm[dm[params()$settings$dm$treatment_col] == groups(),]:")
-        print( dm[dm[params()$settings$dm$treatment_col] == groups(),] )
-        
-        # Jeremy's code  
-        # ids <- dm[dm[params()$settings$dm$treatment_col] %in% groups(),]%>%
-        ids <- dm[dm[params()$settings$dm$treatment_col] == groups(),]%>%
-           pull(params()$settings$dm$id_col)
-        print("print ids object:")
-        print(ids)
-        
-        # Jeremy's code
-        # sub2<-sub1[sub1[params()$settings$dm$id_col,] %in% ids,]
-        
-        #examples for subsetting
-        # data[data$x1 %in% vec, ] 
-        # filter(data, x1 %in% vec) 
-        # sub2<-sub1[sub1[params()$settings$dm$id_col] %in% c(ids),]
-        sub2<-filter(sub1, params()$settings$dm$id_col %in% c(ids))
-        print("print sub2:")
-        print(sub2)
- 
-        # sub1
-        sub2
-    })
-
-    output$click <- renderText({
-        if (is.null(stats_sub())) {
-            "Click events appear here (double-click to clear)" }
-        else {
-            paste("Showing details for AEs in",stats_sub()$strata)
+    output$infoComp <- renderUI({
+        if( length(selected_strata()) == 1 ){
+            HTML(paste(nrow(sub_stat()),"comparisons from <strong>", selected_strata(),"</strong>"))
+        }else if(length(selected_strata() > 1)){
+            HTML(paste(nrow(sub_stat()), "comparisons from <strong>", length(selected_strata()),"groups </strong>"))
+        }else{
+            paste("Brush to see listings")
         }
     })
 
-    # draw AE listing
-    output$aeListing <- renderDT(ae_sub())
+    output$compListing <- renderDT({
+        req(sub_stat())
+        sub_stat() %>% select(-tooltip)
+    })
+
+    output$infoAE <- renderUI({
+        if( length(selected_strata()) == 1 ){
+            HTML(paste(nrow(sub_aes()),"AEs from <strong>", selected_strata(),"</strong>"))
+        }else if(length(selected_strata() > 1)){
+            HTML(paste(nrow(sub_aes()), "AEs from <strong>", length(selected_strata()),"groups </strong>"))
+        }else{
+            paste("Brush to see listings")
+        }
+    })
+
+    output$aeListing <- renderDT({
+        req(sub_aes())
+        sub_aes()
+    })
+    
 }
