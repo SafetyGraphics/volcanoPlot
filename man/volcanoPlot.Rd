@@ -4,7 +4,7 @@
 \alias{volcanoPlot}
 \title{Create a volcano plot}
 \usage{
-volcanoPlot(data, highlights, ...)
+volcanoPlot(data, highlights = c(), ...)
 }
 \arguments{
 \item{data}{A data frame from getStats()}
@@ -17,7 +17,7 @@ cutoff; `ecutoff = 1`: estimate cutoff, `GroupLabels = c('Comparison
 Group', 'Reference Group')`: custom group labels.}
 }
 \value{
-a volcano plot created with ggplot or plotly
+a volcano plot created with ggplot
 }
 \description{
 Create a volcano plot
@@ -27,7 +27,7 @@ settings<-list(
   stratification_col="AEBODSYS",
   group_col="ARM",
   reference_group="Placebo",
-  comparison_group=c("Xanomeline High Dose","Xanomeline Low Dose"),
+  comparison_group="Xanomeline High Dose",
   id_col="USUBJID"
 )
 stats<-getStats(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings)

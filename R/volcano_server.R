@@ -8,7 +8,6 @@
 #' @return returns shiny module Server function
 #'
 #' @import shiny
-#' @importFrom plotly renderPlotly event_data
 #' @importFrom DT renderDT
 #' @importFrom purrr map
 #' @export
@@ -127,7 +126,7 @@ volcano_server <- function(input, output, session, params) {
 
     output$compListing <- renderDT({
         req(sub_stat())
-        sub_stat() %>% select(-tooltip)
+        sub_stat() %>% select(-.data$tooltip)
     })
 
     output$infoAE <- renderUI({

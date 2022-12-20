@@ -7,14 +7,14 @@
 #'   cutoff; `ecutoff = 1`: estimate cutoff, `GroupLabels = c('Comparison
 #'   Group', 'Reference Group')`: custom group labels.
 #'   
-#' @return a volcano plot created with ggplot or plotly
+#' @return a volcano plot created with ggplot
 #'
 #' @examples
 #' settings<-list(
 #'   stratification_col="AEBODSYS",
 #'   group_col="ARM",
 #'   reference_group="Placebo",
-#'   comparison_group=c("Xanomeline High Dose","Xanomeline Low Dose"),
+#'   comparison_group="Xanomeline High Dose",
 #'   id_col="USUBJID"
 #' )
 #' stats<-getStats(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings)
@@ -24,7 +24,7 @@
 #'
 #' @export
 
-volcanoPlot <- function(data, highlights, ...){
+volcanoPlot <- function(data, highlights=c(), ...){
 
   # process options for the plot
   opts <- list(...)
@@ -44,11 +44,11 @@ volcanoPlot <- function(data, highlights, ...){
   data$alpha <- 0.7
   data$alpha[data$strata %in% highlights] <- 1
 
-  p<-ggplot(data, aes(estimate, logp)) +
+  p<-ggplot(data, aes(.data$estimate,.data$logp)) +
   geom_point(
     aes(
-      size = eventN_total, 
-      fill = diffexp,
+      size = .data$eventN_total, 
+      fill = .data$diffexp,
       alpha = alpha
     ),
   pch = 21) +
@@ -68,7 +68,7 @@ volcanoPlot <- function(data, highlights, ...){
   theme(aspect.ratio = 1) + 
 
   # Facet on comparison
-  facet_wrap(vars(comp_grp))
+  facet_wrap(vars(.data$comp_grp))
 
   return(p)
 } 

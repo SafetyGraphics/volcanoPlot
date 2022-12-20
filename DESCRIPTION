@@ -13,13 +13,15 @@ Description: Shiny app showing Volcano Plot for clinical trial adverse events. D
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Imports:
     fmsb,
     dplyr,
+    DT,
     ggplot2,
     tidyr,
     shiny, 
-    fmsb, 
-    plotly,
-    safetyGraphics
+    purrr
+Suggests:
+    safetyGraphics,
+    safetyData

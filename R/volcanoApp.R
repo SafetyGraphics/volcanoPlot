@@ -3,7 +3,8 @@
 #' @param dfAE AE Data
 #' @param dfDemog demog data
 #' @param settings safetyGraphics settings
-#'
+#' @param runNow run app immediately? 
+#' 
 #' @import shiny
 #'
 #' @export
@@ -34,8 +35,8 @@ volcanoApp <- function(dfAE=safetyData::adam_adae, dfDemog = safetyData::adam_ad
         }
     )
 
-    #if(runNow)
+    if(runNow)
         runApp(app)
-    #else
-    #app
+    else
+    app
 }
