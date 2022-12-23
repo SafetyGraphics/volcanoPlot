@@ -9,7 +9,7 @@ Authors@R: c(
 	person("Anh","Tran", role = "aut"),
 	person("Isaac","Zhao", role="aut"))
 Maintainer: Jeremy Wildfire <jwildfire@gmail.com>
-Description: Shiny app showing Volcano Plot for clinical trial adverse events. Designed to work with {safetyGraphics}.
+Description: Shiny app showing Volcano Plot for clinical trial adverse events.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
