@@ -81,13 +81,23 @@ volcano_server <- function(input, output, session, params) {
 
     #hover data
     hover_data <- reactive({
-        nearPoints(stats(), input$plot_hover)
+        nearPoints(
+            stats(), 
+            input$plot_hover,
+            xvar="estimate",
+            yvar="logp"
+            )
     })
 
     #selected strata
     selected_strata <- reactive({
         req(stats)
-        unique(brushedPoints(stats(), input$plot_brush)$strata)
+        unique(brushedPoints(
+            stats(), 
+            input$plot_brush,
+            xvar="estimate",
+            yvar="logp"
+        )$strata)
     })
 
     #filtered ae data
