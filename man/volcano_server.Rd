@@ -19,5 +19,5 @@ volcano_server(input, output, session, params)
 returns shiny module Server function
 }
 \description{
-Volcano Plot Module - Server
+Modularized server for AE volcano plot.
 }

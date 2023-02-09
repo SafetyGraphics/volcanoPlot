@@ -20,7 +20,7 @@ Group', 'Reference Group')`: custom group labels.}
 a volcano plot created with ggplot
 }
 \description{
-Create a volcano plot
+Creates a paneled volcano plot showing the distribution of Adverse events. Options to highlight selected events and customize options are provided.
 }
 \examples{
 settings<-list(

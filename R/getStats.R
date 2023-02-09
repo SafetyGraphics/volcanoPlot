@@ -1,6 +1,8 @@
-#' Get statistics for AE data
+#' Get Summary AE Statistics
+#' 
+#' Compares reference and comparison groups to calculate group-wise metrics and p-values for use in AE volcano plot. 
 #'
-#' @param settings Named list of settings
+#' @param settings Named list of settings (see examples below for standard list)
 #' @param dfAE Adverse events dataset structured as 1 record per adverse event
 #'   per subject
 #' @param dfDemog Subject-level dataset
@@ -8,7 +10,7 @@
 #'   or "Risk Ratio"), risk difference ("RD" or "Risk Difference"). Defaults to
 #'   "Risk Ratio".
 #'
-#' @return a data frame for use in the volcano plot
+#' @return a data frame of group-wise statistics for use in the volcano plot
 #'   
 #' @examples
 #' settings<-list(

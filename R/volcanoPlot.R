@@ -1,4 +1,6 @@
 #' Create a volcano plot
+#' 
+#' Creates a paneled volcano plot showing the distribution of Adverse events. Options to highlight selected events and customize options are provided. 
 #'
 #' @param data A data frame from getStats()
 #' @param highlights A list providing a column and values to be highlighted in the chart

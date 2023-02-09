@@ -20,6 +20,9 @@ volcanoApp(
 
 \item{runNow}{run app immediately?}
 }
+\value{
+Initializes Shiny app. No return value.
+}
 \description{
-Volcano App
+Initializes stand-alone volcano plot shiny application.
 }

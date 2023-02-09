@@ -1,12 +1,14 @@
 #' Volcano Plot Module - UI
 #'
+#' Modularized user interface for AE Volcano plot
+#' 
 #' @param id module id
 #'
 #' @return returns shiny module UI
 #'
 #' @import shiny
 #' @importFrom DT DTOutput
-#'
+#' 
 #' @export
 #'
 

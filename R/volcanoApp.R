@@ -1,9 +1,13 @@
 #' Volcano App
 #'
+#' Initializes stand-alone volcano plot shiny application. 
+#' 
 #' @param dfAE AE Data
 #' @param dfDemog demog data
 #' @param settings safetyGraphics settings
 #' @param runNow run app immediately? 
+#' 
+#' @return Initializes Shiny app. No return value. 
 #' 
 #' @import shiny
 #'

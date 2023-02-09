@@ -1,5 +1,7 @@
 #' Volcano Plot Module - Server
 #'
+#' Modularized server for AE volcano plot. 
+#' 
 #' @param input module input
 #' @param output module output
 #' @param session module session

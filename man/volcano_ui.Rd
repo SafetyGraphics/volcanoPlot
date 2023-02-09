@@ -13,5 +13,5 @@ volcano_ui(id)
 returns shiny module UI
 }
 \description{
-Volcano Plot Module - UI
+Modularized user interface for AE Volcano plot
 }

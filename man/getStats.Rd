@@ -2,7 +2,7 @@
 % Please edit documentation in R/getStats.R
 \name{getStats}
 \alias{getStats}
-\title{Get statistics for AE data}
+\title{Get Summary AE Statistics}
 \usage{
 getStats(dfAE, dfDemog, settings, stat = "Risk Ratio")
 }
@@ -12,17 +12,17 @@ per subject}
 
 \item{dfDemog}{Subject-level dataset}
 
-\item{settings}{Named list of settings}
+\item{settings}{Named list of settings (see examples below for standard list)}
 
 \item{stat}{Statistic to calculate for AE plot. Options are risk ratio ("RR"
 or "Risk Ratio"), risk difference ("RD" or "Risk Difference"). Defaults to
 "Risk Ratio".}
 }
 \value{
-a data frame for use in the volcano plot
+a data frame of group-wise statistics for use in the volcano plot
 }
 \description{
-Get statistics for AE data
+Compares reference and comparison groups to calculate group-wise metrics and p-values for use in AE volcano plot.
 }
 \examples{
 settings<-list(
