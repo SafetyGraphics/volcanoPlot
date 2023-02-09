@@ -9,7 +9,7 @@ Authors@R: c(
 	person("Anh","Tran", role = "aut"),
 	person("Isaac","Zhao", role="aut"))
 Maintainer: Jeremy Wildfire <jwildfire@gmail.com>
-Description: Shiny app showing Volcano Plot for clinical trial adverse events.
+Description: Interactive adverse event (AE) volcano plot for monitoring clinical trial safety. This tool allows users to view the overall distribution of AEs in a clinical trial using standard (e.g. MedDRA preferred term) or custom (e.g. Gender) catergories. This tool provides a stand-along shiny application and flexible shiny modules allowing this tool to be used as a part of more robust safety monitoring framework like the Shiny app from the 'safetyGraphics' R package. 
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
