@@ -1,6 +1,6 @@
 # volcano-plot
 
-Interactive adverse event (AE) volcano plot for monitoring clinical trial safety. This tool allows users to view the overall distribution of AEs in a clinical trial using standard (e.g. MedDRA preferred term) or custom (e.g. Gender) categories using a volcano plot similar to proposal by [Zink et al. (2013)](https://pubmed.ncbi.nlm.nih.gov/23690094/). This tool provides a stand-along shiny application and flexible shiny modules allowing this tool to be used as a part of more robust safety monitoring framework like the Shiny app from the 'safetyGraphics' R package. 
+Interactive adverse event (AE) volcano plot for monitoring clinical trial safety. This tool allows users to view the overall distribution of AEs in a clinical trial using standard (e.g. MedDRA preferred term) or custom (e.g. Gender) categories using a volcano plot similar to proposal by [Zink et al. (2013)](https://pubmed.ncbi.nlm.nih.gov/23690094/). This tool provides a stand-alone shiny application and flexible shiny modules allowing this tool to be used as a part of more robust safety monitoring framework like the Shiny app from the 'safetyGraphics' R package. 
 License: MIT + file LICENSE
 
 <img width="1429" alt="image" src="https://user-images.githubusercontent.com/3680095/172978390-a803a937-f156-4f49-b4e9-bae9bdb84d77.png">
