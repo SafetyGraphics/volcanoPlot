@@ -22,10 +22,10 @@ volcano_server <- function(input, output, session, params) {
             session,
             inputId = "stratification_col",
             choices = c(
-                'Body System / Organ Class' = params()$aes$mapping$bodsys_col,
-                'Preferred Term' = params()$aes$mapping$term_col
+                'Body System / Organ Class' = params()$settings$aes$bodsys_col,
+                'Preferred Term' = params()$settings$aes$term_col
             ),
-            selected = params()$aes$mapping$bodsys_col
+            selected = params()$settings$aes$bodsys_col
         )
     })
 
@@ -56,10 +56,10 @@ volcano_server <- function(input, output, session, params) {
 
     # Capture [ ae ] mapping and data.
     ae <- reactive({
-        mapping <- params()$settings$ae
+        mapping <- params()$settings$aes
 
         # Remove invalid subject IDs.
-        data <- params()$data$ae %>%
+        data <- params()$data$aes %>%
             filter(
                 .data[[ mapping$id_col ]] %in% dm()$data[[ dm()$mapping$id_col ]]
             )
@@ -89,7 +89,7 @@ volcano_server <- function(input, output, session, params) {
                     dm = dm()$data,
                     ae = ae()$data,
                     settings = comp_mapping,
-                    stat = input$statistic
+                    statistic = input$statistic
                 )
 
                 return(stats)
@@ -100,20 +100,32 @@ volcano_server <- function(input, output, session, params) {
     })
 
     # selected strata
-    selected_strata <- reactive({
-        req(stats())
+    #selected_strata <- reactive({
+    #    req(stats())
 
-        stats() %>%
-            brushedPoints(
-                input$plot_brush,
-                xvar = "estimate",
-                yvar = "logp"
-            )$strata %>%
-            unique()
+    #    stats() %>%
+    #        brushedPoints(
+    #            input$plot_brush,
+    #            xvar = "estimate",
+    #            yvar = "logp"
+    #        )$strata %>%
+    #        unique()
+    #})
+
+    # selected strata
+    selected_strata <- reactive({
+        req(stats)
+
+        unique(brushedPoints(
+            stats(),
+            input$plot_brush,
+            xvar = "estimate",
+            yvar = "logp"
+        )$strata)
     })
 
     ## Output plots
-    output$volcano_plot <- renderPlot({
+    output$plot <- renderPlot({
         req(stats())
 
         volcano_plot(
@@ -128,6 +140,7 @@ volcano_server <- function(input, output, session, params) {
 
     # hover data
     hover_data <- reactive({
+
         nearPoints(
             stats(),
             input$plot_hover,
@@ -139,14 +152,24 @@ volcano_server <- function(input, output, session, params) {
     # filtered ae data
     sub_aes <- reactive({
         req(selected_strata())
-        raw_aes <- params()$data$aes
-        sub_aes <- raw_aes %>% filter(.data[[mapping()$stratification_col]] %in% selected_strata())
+
+        #raw_aes <- params()$data$aes
+        #sub_aes <- raw_aes %>% filter(.data[[dm()$mapping$stratification_col]] %in% selected_strata())
+        ae()$data %>%
+            filter(
+                .data[[dm()$mapping$stratification_col]] %in% selected_strata()
+            )
     })
 
     # filtered comparison data
     sub_stat <- reactive({
         req(selected_strata())
-        stats()[stats()$strata %in% selected_strata(), ]
+
+        #stats()[stats()$strata %in% selected_strata(), ]
+        stats() %>%
+            filter(
+                .data$strata %in% selected_strata()
+            )
     })
 
     ##########################
@@ -172,6 +195,7 @@ volcano_server <- function(input, output, session, params) {
 
     output$comparison_listing <- renderDT({
         req(sub_stat())
+
         sub_stat() %>% select(-.data$tooltip)
     })
 
@@ -187,6 +211,7 @@ volcano_server <- function(input, output, session, params) {
 
     output$ae_listing <- renderDT({
         req(sub_aes())
+
         sub_aes()
     })
 }

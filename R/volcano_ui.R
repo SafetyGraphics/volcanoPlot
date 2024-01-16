@@ -38,7 +38,7 @@ volcano_ui <- function(id) {
     # show main panel with plots, data tables
     main <- mainPanel(
         plotOutput(
-            ns("volcano_plot"),
+            ns("plot"),
             height = "650px",
             hover = hoverOpts(ns("plot_hover"), delay = 50),
             brush = brushOpts(ns("plot_brush"), resetOnNew = FALSE)

@@ -38,9 +38,17 @@ get_stats <- function(
     settings,
     statistic = "Risk Ratio"
 ) {
-    ## Prepare data
-    #dm <- dm %>% select(settings[["id_col"]], settings[["treatment_col"]])
-    anly <- dm %>% left_join(ae) # left join to keep all rows in dm (even if there were no AEs)
+    # left join to keep all rows in dm (even if there were no AEs)
+    anly <- dm %>%
+        select(
+            settings$id_col,
+            settings$treatment_col
+        ) %>%
+        left_join(
+            ae,
+            settings$id_col
+        )
+
     aeCounts <- list()
 
     # count n of comparison group
@@ -56,11 +64,16 @@ get_stats <- function(
         pull(.data[[settings$id_col]]) %>%
         unique() %>%
         length()
-browser()
+
     # create table of numbers for doing stats
     aeCounts <- anly %>%
-        filter(.data[[settings$treatment_col]] %in% c(settings$comparison_group, settings$reference_group)) %>%
-        group_by(.data[[settings$stratification_col]], .data[[settings$treatment_col]]) %>%
+        filter(
+            .data[[settings$treatment_col]] %in% c(settings$comparison_group, settings$reference_group)
+        ) %>%
+        group_by(
+            .data[[settings$stratification_col]],
+            .data[[settings$treatment_col]]
+        ) %>%
         # summarize(event=n())%>% do we need this too?
         summarize(event = length(unique(.data[[settings$id_col]]))) %>%
         ungroup() %>%
@@ -88,12 +101,17 @@ browser()
         aeCounts <- aeCounts %>%
             rowwise() %>%
             mutate(
-                result = fmsb::riskratio(
-                    X = .data$eventN_comparison,
-                    Y = .data$eventN_ref,
-                    m1 = .data$N_comparison,
-                    m2 = .data$N_ref
-                ) %>% list(),
+                result = {
+                    sink(tempfile()) # suppress `print` output
+                    result <- fmsb::riskratio(
+                        X = .data$eventN_comparison,
+                        Y = .data$eventN_ref,
+                        m1 = .data$N_comparison,
+                        m2 = .data$N_ref
+                    ) %>% list()
+                    sink()
+                    result
+                },
                 pvalue = .data$result$`p.value`,
                 estimate = .data$result$estimate,
                 ref_grp = settings$reference_group,
@@ -106,6 +124,17 @@ browser()
         aeCounts <- aeCounts %>%
             rowwise() %>%
             mutate(
+                result = {
+                    sink(tempfile()) # suppress `print` output
+                    result <- fmsb::riskdifference(
+                        a = .data$eventN_comparison,
+                        b = .data$eventN_ref,
+                        N1 = .data$N_comparison,
+                        N0 = .data$N_ref
+                    ) %>% list()
+                    sink()
+                    result
+                },
                 result = fmsb::riskdifference(
                     a = .data$eventN_comparison,
                     b = .data$eventN_ref,

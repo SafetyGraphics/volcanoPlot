@@ -50,11 +50,11 @@ volcano_app <- function(
 
     ## Create app with ui and server
     app <- shinyApp(
-        ui = volcano_ui("volcano_plot"),
+        ui = volcano_ui("volcano"),
         server = function(input, output, session) {
             callModule(
                 volcano_server,
-                "volcano_plot",
+                "volcano",
                 params
             )
         }

@@ -46,7 +46,7 @@ volcano_plot <- function(
         opts$pcutoff <- 0.05
     }
     if (!("ecutoff" %in% names(opts))) {
-        opts$ecutoff <- ifelse(data$stat[1] == "Risk Difference", 0, 1)
+        opts$ecutoff <- ifelse(data$statistic[1] == "Risk Difference", 0, 1)
     }
 
     # change fill color based on pvalue and estimate
@@ -58,7 +58,8 @@ volcano_plot <- function(
     data$alpha <- 0.7
     data$alpha[data$strata %in% highlights] <- 1
 
-    p <- ggplot(data, aes(.data$estimate, .data$logp)) +
+    p <- data %>%
+        ggplot(aes(.data$estimate, .data$logp)) +
         geom_point(
             aes(
                 size = .data$eventN_total,
