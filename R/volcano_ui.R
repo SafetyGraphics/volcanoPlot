@@ -17,10 +17,9 @@ volcano_ui <- function(id) {
 
     ## Show sidebar
     sidebar <- sidebarPanel(
-
         # Calculation type input
         selectizeInput(
-            ns("calculation_type"),
+            ns("statistic"),
             label = "Measure of Association",
             choices = c(
                 "Risk Ratio",
@@ -30,7 +29,7 @@ volcano_ui <- function(id) {
 
         # Stratification input
         selectizeInput(
-            ns("stratification_values"),
+            ns("stratification_col"),
             label = "System Organ Glass / Preferred Term",
             choices = c()
         )
@@ -39,26 +38,26 @@ volcano_ui <- function(id) {
     # show main panel with plots, data tables
     main <- mainPanel(
         plotOutput(
-            ns("volcanoPlot"),
+            ns("volcano_plot"),
             height = "650px",
             hover = hoverOpts(ns("plot_hover"), delay = 50),
             brush = brushOpts(ns("plot_brush"), resetOnNew = FALSE)
         ),
         tags$small(wellPanel(htmlOutput(ns("footnote")))),
         tabsetPanel(
-            id = ns("tableWrap"), type = "tabs",
+            id = ns("table_wrap"), type = "tabs",
             tabPanel(
                 "Comparisons",
                 div(
-                    h5(htmlOutput(ns("infoComp"))),
-                    DTOutput(ns("compListing"))
+                    h5(htmlOutput(ns("comparison_info"))),
+                    DTOutput(ns("comparison_listing"))
                 )
             ),
             tabPanel(
                 "Adverse Events",
                 div(
-                    h5(htmlOutput(ns("infoAE"))),
-                    DTOutput(ns("aeListing"))
+                    h5(htmlOutput(ns("ae_info"))),
+                    DTOutput(ns("ae_listing"))
                 )
             )
         )

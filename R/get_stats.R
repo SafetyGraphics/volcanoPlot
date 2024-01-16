@@ -2,11 +2,10 @@
 #'
 #' Compares reference and comparison groups to calculate group-wise metrics and p-values for use in AE volcano plot.
 #'
-#' @param settings Named list of settings (see examples below for standard list)
-#' @param dfAE Adverse events dataset structured as 1 record per adverse event
-#'   per subject
-#' @param dfDemog Subject-level dataset
-#' @param stat Statistic to calculate for AE plot. Options are risk ratio ("RR"
+#' @param dm `data.frame` Subject-level dataset with one record per subject.
+#' @param ae `data.frame` Event-level datasets with one record per adverse event.
+#' @param settings `list` Named list of settings (see examples below for standard list).
+#' @param statistic `character` Statistic to calculate for AE plot. Options are risk ratio ("RR"
 #'   or "Risk Ratio"), risk difference ("RD" or "Risk Difference"). Defaults to
 #'   "Risk Ratio".
 #'
@@ -15,12 +14,17 @@
 #' @examples
 #' settings <- list(
 #'     stratification_col = "AEBODSYS",
-#'     group_col = "ARM",
+#'     treatment_col = "ARM",
 #'     reference_group = "Placebo",
 #'     comparison_group = "Xanomeline High Dose",
 #'     id_col = "USUBJID"
 #' )
-#' getStats(dfAE = safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings)
+#'
+#' get_stats(
+#'     dm = safetyData::adam_adsl,
+#'     ae = safetyData::adam_adae,
+#'     settings
+#' )
 #'
 #' @import dplyr
 #' @import tidyr
@@ -28,43 +32,41 @@
 #'
 #' @export
 
-getStats <- function(
-    dfAE,
-    dfDemog,
+get_stats <- function(
+    dm,
+    ae,
     settings,
-    stat = "Risk Ratio"
+    statistic = "Risk Ratio"
 ) {
     ## Prepare data
-    dfDemog <- dfDemog %>% select(settings[["id_col"]], settings[["group_col"]])
-    anly <- dfDemog %>% left_join(dfAE) # left join to keep all rows in dm (even if there were no AEs)
+    #dm <- dm %>% select(settings[["id_col"]], settings[["treatment_col"]])
+    anly <- dm %>% left_join(ae) # left join to keep all rows in dm (even if there were no AEs)
     aeCounts <- list()
 
-
-
     # count n of comparison group
-    N_comparison <- dfDemog %>%
-        filter(.data[[settings$group_col]] == settings$comparison_group) %>%
+    N_comparison <- dm %>%
+        filter(.data[[settings$treatment_col]] == settings$comparison_group) %>%
         pull(.data[[settings$id_col]]) %>%
         unique() %>%
         length()
 
     # count n of reference group
-    N_ref <- dfDemog %>%
-        filter(.data[[settings$group_col]] == settings$reference_group) %>%
+    N_ref <- dm %>%
+        filter(.data[[settings$treatment_col]] == settings$reference_group) %>%
         pull(.data[[settings$id_col]]) %>%
         unique() %>%
         length()
-
+browser()
     # create table of numbers for doing stats
     aeCounts <- anly %>%
-        filter(.data[[settings$group_col]] %in% c(settings$comparison_group, settings$reference_group)) %>%
-        group_by(.data[[settings$stratification_col]], .data[[settings$group_col]]) %>%
+        filter(.data[[settings$treatment_col]] %in% c(settings$comparison_group, settings$reference_group)) %>%
+        group_by(.data[[settings$stratification_col]], .data[[settings$treatment_col]]) %>%
         # summarize(event=n())%>% do we need this too?
         summarize(event = length(unique(.data[[settings$id_col]]))) %>%
         ungroup() %>%
         stats::na.omit() %>%
         pivot_wider(
-            names_from = .data[[settings$group_col]],
+            names_from = .data[[settings$treatment_col]],
             values_from = "event",
             values_fill = 0
         ) %>%
@@ -82,7 +84,7 @@ getStats <- function(
         arrange(-1 * .data$eventN_total)
 
     # calculate stats for each row
-    if (stat %in% c("RR", "Risk Ratio")) {
+    if (statistic %in% c("RR", "Risk Ratio")) {
         aeCounts <- aeCounts %>%
             rowwise() %>%
             mutate(
@@ -99,8 +101,8 @@ getStats <- function(
             ) %>%
             ungroup() %>%
             select(-.data$result) %>%
-            mutate(stat = "Risk Ratio")
-    } else if (stat %in% c("RD", "Risk Difference")) {
+            mutate(statistic = "Risk Ratio")
+    } else if (statistic %in% c("RD", "Risk Difference")) {
         aeCounts <- aeCounts %>%
             rowwise() %>%
             mutate(
@@ -117,13 +119,14 @@ getStats <- function(
             ) %>%
             ungroup() %>%
             select(-.data$result) %>%
-            mutate(stat = "Risk Difference")
+            mutate(statistic = "Risk Difference")
     } else if (TRUE) {
-        message("stat not supported yet :( ")
+        message("[ statistic ] not supported yet :( ")
     }
+
     aeCounts <- aeCounts %>%
-        mutate(logp = -log10(.data$pvalue)) %>%
         mutate(
+            logp = -log10(.data$pvalue),
             tooltip = paste0(
                 "Group:  ", .data$strata, "<br/>",
                 "Risk Ratio: ", round(.data$estimate, 2), "<br/>",
@@ -132,6 +135,7 @@ getStats <- function(
                 .data$comp_grp, ": ", .data$eventN_comparison, "/", .data$eventN_total, "<br/>"
             )
         )
+
     ## create one table from a list of tables
     return(aeCounts)
 }

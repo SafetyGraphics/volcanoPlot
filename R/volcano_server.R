@@ -16,63 +16,107 @@
 
 volcano_server <- function(input, output, session, params) {
     ns <- session$ns
-    cat("starting server")
-
-    ## create a custom mapping for stats calculation
-    mapping <- reactive({
-        req(input$stratification_values)
-        dm <- params()$data$dm
-        reference_group <- params()$settings$dm$treatment_values$group1
-        all_groups <- unique(dm[[params()$settings$dm$treatment_col]])
-        comparison_groups <- all_groups[all_groups != reference_group]
-
-        mapping <- list(
-            stratification_col = input$stratification_values,
-            group_col = params()$settings$dm$treatment_col,
-            reference_group = reference_group,
-            comparison_group = comparison_groups,
-            id_col = params()$settings$dm$id_col
-        )
-        return(mapping)
-    })
-
-    strata_cols <- reactive({
-        c(
-            params()$settings$aes$bodsys_col,
-            params()$settings$aes$term_col
-        )
-    })
 
     observe({
         updateSelectizeInput(
             session,
-            inputId = "stratification_values",
-            choices = strata_cols(),
-            selected = strata_cols()[[1]]
+            inputId = "stratification_col",
+            choices = c(
+                'Body System / Organ Class' = params()$aes$mapping$bodsys_col,
+                'Preferred Term' = params()$aes$mapping$term_col
+            ),
+            selected = params()$aes$mapping$bodsys_col
         )
     })
 
-    # calculate the stats
+    # Capture [ dm ] mapping and data.
+    dm <- reactive({
+        req(input$stratification_col)
+
+        mapping <- params()$settings$dm
+
+        # Remove missing values of treatment group.
+        data <- params()$data$dm %>%
+            filter(
+                .data[[ mapping$treatment_col ]] %>% is.na == FALSE,
+                .data[[ mapping$treatment_col ]] != ''
+            )
+
+        return(
+            list(
+                mapping = mapping %>%
+                    add_treatment_groups(
+                        data,
+                        input$stratification_col
+                    ),
+                data = data
+            )
+        )
+    })
+
+    # Capture [ ae ] mapping and data.
+    ae <- reactive({
+        mapping <- params()$settings$ae
+
+        # Remove invalid subject IDs.
+        data <- params()$data$ae %>%
+            filter(
+                .data[[ mapping$id_col ]] %in% dm()$data[[ dm()$mapping$id_col ]]
+            )
+
+        return(
+            list(
+                mapping = mapping,
+                data = data
+            )
+        )
+    })
+
+    # Calculate statistics.
     stats <- reactive({
-        req(mapping())
-        stats <- mapping()$comparison_group %>%
+        req(
+            dm(),
+            ae(),
+            input$statistic
+        )
+
+        stats <- dm()$mapping$comparison_group %>%
             map(function(comp_group) {
-                comp_mapping <- mapping()
+                comp_mapping <- dm()$mapping
                 comp_mapping$comparison_group <- comp_group
-                stats <- getStats(
-                    dfAE = params()$data$aes,
-                    dfDemog = params()$data$dm,
+
+                stats <- get_stats(
+                    dm = dm()$data,
+                    ae = ae()$data,
                     settings = comp_mapping,
-                    stat = input$calculation_type
+                    stat = input$statistic
                 )
+
                 return(stats)
             }) %>%
             bind_rows()
+
+        return(stats)
+    })
+
+    # selected strata
+    selected_strata <- reactive({
+        req(stats())
+
+        stats() %>%
+            brushedPoints(
+                input$plot_brush,
+                xvar = "estimate",
+                yvar = "logp"
+            )$strata %>%
+            unique()
     })
 
     ## Output plots
-    output$volcanoPlot <- renderPlot({
-        volcanoPlot(
+    output$volcano_plot <- renderPlot({
+        req(stats())
+
+        volcano_plot(
             data = stats(),
             highlights = selected_strata()
         )
@@ -90,17 +134,6 @@ volcano_server <- function(input, output, session, params) {
             xvar = "estimate",
             yvar = "logp"
         )
-    })
-
-    # selected strata
-    selected_strata <- reactive({
-        req(stats)
-        unique(brushedPoints(
-            stats(),
-            input$plot_brush,
-            xvar = "estimate",
-            yvar = "logp"
-        )$strata)
     })
 
     # filtered ae data
@@ -127,7 +160,7 @@ volcano_server <- function(input, output, session, params) {
         }
     })
 
-    output$infoComp <- renderUI({
+    output$comparison_info <- renderUI({
         if (length(selected_strata()) == 1) {
             HTML(paste(nrow(sub_stat()), "comparisons from <strong>", selected_strata(), "</strong>"))
         } else if (length(selected_strata() > 1)) {
@@ -137,12 +170,12 @@ volcano_server <- function(input, output, session, params) {
         }
     })
 
-    output$compListing <- renderDT({
+    output$comparison_listing <- renderDT({
         req(sub_stat())
         sub_stat() %>% select(-.data$tooltip)
     })
 
-    output$infoAE <- renderUI({
+    output$ae_info <- renderUI({
         if (length(selected_strata()) == 1) {
             HTML(paste(nrow(sub_aes()), "AEs from <strong>", selected_strata(), "</strong>"))
         } else if (length(selected_strata() > 1)) {
@@ -152,7 +185,7 @@ volcano_server <- function(input, output, session, params) {
         }
     })
 
-    output$aeListing <- renderDT({
+    output$ae_listing <- renderDT({
         req(sub_aes())
         sub_aes()
     })

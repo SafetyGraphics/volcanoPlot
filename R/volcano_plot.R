@@ -2,7 +2,7 @@
 #'
 #' Creates a paneled volcano plot showing the distribution of Adverse events. Options to highlight selected events and customize options are provided.
 #'
-#' @param data A data frame from getStats()
+#' @param data A data frame from get_stats()
 #' @param highlights A list providing a column and values to be highlighted in the chart
 #' @param ... Extra options to change the look of the plot. `fillcol =
 #'   c('sienna2', 'skyblue2', 'grey')`: fill colors; `pcutoff = 0.05`: p value
@@ -19,14 +19,20 @@
 #'     comparison_group = "Xanomeline High Dose",
 #'     id_col = "USUBJID"
 #' )
-#' stats <- getStats(dfAE = safetyData::adam_adae, dfDemog = safetyData::adam_adsl, settings)
-#' volcanoPlot(stats)
+#'
+#' stats <- get_stats(
+#'     dm = safetyData::adam_adsl,
+#'     ae = safetyData::adam_adae,
+#'     settings
+#' )
+#'
+#' volcano_plot(stats)
 #'
 #' @import ggplot2
 #'
 #' @export
 
-volcanoPlot <- function(
+volcano_plot <- function(
     data,
     highlights = c(),
     ...

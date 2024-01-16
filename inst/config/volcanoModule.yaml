@@ -5,8 +5,8 @@ package: volcanoPlot
 export: false
 order: 1
 domain: 
-  - aes
   - dm
+  - aes
 workflow:
   ui: volcano_ui
   server: volcano_server
