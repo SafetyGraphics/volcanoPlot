@@ -3,7 +3,7 @@ label: AE Volcano Plot Module
 type: module
 package: volcanoPlot
 export: false
-order: 1
+order: 2.1
 domain: 
   - dm
   - aes
