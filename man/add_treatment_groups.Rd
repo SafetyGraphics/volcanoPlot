@@ -6,6 +6,13 @@
 \usage{
 add_treatment_groups(mapping, data, stratification_col)
 }
+\arguments{
+\item{mapping}{`list` Domain metadata}
+
+\item{data}{`data.frame` Domain data}
+
+\item{stratification_col}{`character` Stratification column name}
+}
 \description{
 Customize [ dm ] mapping for stats calculation.
 }

@@ -1,5 +1,5 @@
 Package: volcanoPlot
-Version: 1.0.0
+Version: 1.1.0
 Title: Volcano Plot for Clinical Trial Adverse Events
 Description: Interactive adverse event (AE) volcano plot for monitoring clinical trial safety. This tool allows users to view the overall distribution of AEs in a clinical trial using standard (e.g. MedDRA preferred term) or custom (e.g. Gender) categories using a volcano plot similar to proposal by Zink et al. (2013) <doi:10.1177/1740774513485311>. This tool provides a stand-along shiny application and flexible shiny modules allowing this tool to be used as a part of more robust safety monitoring framework like the Shiny app from the 'safetyGraphics' R package. 
 Type: Package
@@ -17,13 +17,18 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.1
 Imports:
-    fmsb,
-    dplyr,
     DT,
+    cli,
+    dplyr,
+    fmsb,
+    htmltools,
     ggplot2,
-    tidyr,
+    purrr,
     shiny, 
-    purrr
+    tidyr
 Suggests:
-    safetyGraphics,
-    safetyData
+    safetyData,
+    safetyGraphics
+Remotes:
+    safetyData=SafetyGraphics/safetyData,
+    safetyGraphics=SafetyGraphics/safetyGraphics

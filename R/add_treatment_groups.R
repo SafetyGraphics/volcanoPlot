@@ -1,5 +1,11 @@
 #' Customize [ dm ] mapping for stats calculation.
 #'
+#' @param mapping `list` Domain metadata
+#' @param data `data.frame` Domain data
+#' @param stratification_col `character` Stratification column name
+#'
+#' @importFrom cli cli_alert_info
+#'
 #' @export
 
 add_treatment_groups <- function(mapping, data, stratification_col) {

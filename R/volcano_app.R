@@ -4,7 +4,7 @@
 #'
 #' @param dm `data.frame` Subject-level data with one row per subject.
 #' @param ae `data.frame` Event-level data with one row per adverse event.
-#' @param settings `list` safetyGraphics settings
+#' @param settings `list` `{safetyGraphics}` settings
 #' @param runNow `logical` run app immediately?
 #'
 #' @return Initializes Shiny app. No return value.

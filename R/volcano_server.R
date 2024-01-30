@@ -9,9 +9,12 @@
 #'
 #' @return returns shiny module Server function
 #'
-#' @import shiny
 #' @importFrom DT renderDT
 #' @importFrom purrr map
+#' @importFrom dplyr bind_rows filter
+#' @importFrom htmltools HTML
+#' @import shiny
+#'
 #' @export
 
 volcano_server <- function(input, output, session, params) {
@@ -37,7 +40,7 @@ volcano_server <- function(input, output, session, params) {
 
         # Remove missing values of treatment group.
         data <- params()$data$dm %>%
-            filter(
+            dplyr::filter(
                 .data[[ mapping$treatment_col ]] %>% is.na == FALSE,
                 .data[[ mapping$treatment_col ]] != ''
             )
@@ -60,7 +63,7 @@ volcano_server <- function(input, output, session, params) {
 
         # Remove invalid subject IDs.
         data <- params()$data$aes %>%
-            filter(
+            dplyr::filter(
                 .data[[ mapping$id_col ]] %in% dm()$data[[ dm()$mapping$id_col ]]
             )
 
@@ -81,7 +84,7 @@ volcano_server <- function(input, output, session, params) {
         )
 
         stats <- dm()$mapping$comparison_group %>%
-            map(function(comp_group) {
+            purrr::map(function(comp_group) {
                 comp_mapping <- dm()$mapping
                 comp_mapping$comparison_group <- comp_group
 
@@ -94,7 +97,7 @@ volcano_server <- function(input, output, session, params) {
 
                 return(stats)
             }) %>%
-            bind_rows()
+            dplyr::bind_rows()
 
         return(stats)
     })
@@ -140,7 +143,6 @@ volcano_server <- function(input, output, session, params) {
 
     # hover data
     hover_data <- reactive({
-
         nearPoints(
             stats(),
             input$plot_hover,
@@ -156,7 +158,7 @@ volcano_server <- function(input, output, session, params) {
         #raw_aes <- params()$data$aes
         #sub_aes <- raw_aes %>% filter(.data[[dm()$mapping$stratification_col]] %in% selected_strata())
         ae()$data %>%
-            filter(
+            dplyr::filter(
                 .data[[dm()$mapping$stratification_col]] %in% selected_strata()
             )
     })
@@ -167,7 +169,7 @@ volcano_server <- function(input, output, session, params) {
 
         #stats()[stats()$strata %in% selected_strata(), ]
         stats() %>%
-            filter(
+            dplyr::filter(
                 .data$strata %in% selected_strata()
             )
     })
@@ -177,7 +179,7 @@ volcano_server <- function(input, output, session, params) {
     #########################
     output$footnote <- renderUI({
         if (nrow(hover_data()) > 0) {
-            HTML(paste(hover_data()$tooltip, collapse = "<hr>"))
+            htmltools::HTML(paste(hover_data()$tooltip, collapse = "<hr>"))
         } else {
             "Hover to see point details"
         }
@@ -185,15 +187,15 @@ volcano_server <- function(input, output, session, params) {
 
     output$comparison_info <- renderUI({
         if (length(selected_strata()) == 1) {
-            HTML(paste(nrow(sub_stat()), "comparisons from <strong>", selected_strata(), "</strong>"))
+            htmltools::HTML(paste(nrow(sub_stat()), "comparisons from <strong>", selected_strata(), "</strong>"))
         } else if (length(selected_strata() > 1)) {
-            HTML(paste(nrow(sub_stat()), "comparisons from <strong>", length(selected_strata()), "groups </strong>"))
+            htmltools::HTML(paste(nrow(sub_stat()), "comparisons from <strong>", length(selected_strata()), "groups </strong>"))
         } else {
             paste("Brush to see listings")
         }
     })
 
-    output$comparison_listing <- renderDT({
+    output$comparison_listing <- DT::renderDT({
         req(sub_stat())
 
         sub_stat() %>% select(-.data$tooltip)
@@ -201,15 +203,15 @@ volcano_server <- function(input, output, session, params) {
 
     output$ae_info <- renderUI({
         if (length(selected_strata()) == 1) {
-            HTML(paste(nrow(sub_aes()), "AEs from <strong>", selected_strata(), "</strong>"))
+            htmltools::HTML(paste(nrow(sub_aes()), "AEs from <strong>", selected_strata(), "</strong>"))
         } else if (length(selected_strata() > 1)) {
-            HTML(paste(nrow(sub_aes()), "AEs from <strong>", length(selected_strata()), "groups </strong>"))
+            htmltools::HTML(paste(nrow(sub_aes()), "AEs from <strong>", length(selected_strata()), "groups </strong>"))
         } else {
             paste("Brush to see listings")
         }
     })
 
-    output$ae_listing <- renderDT({
+    output$ae_listing <- DT::renderDT({
         req(sub_aes())
 
         sub_aes()

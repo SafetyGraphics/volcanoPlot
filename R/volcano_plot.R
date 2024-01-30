@@ -14,18 +14,18 @@
 #' @examples
 #' settings <- list(
 #'     stratification_col = "AEBODSYS",
-#'     group_col = "ARM",
+#'     treatment_col = "ARM",
 #'     reference_group = "Placebo",
 #'     comparison_group = "Xanomeline High Dose",
 #'     id_col = "USUBJID"
 #' )
-#'
+#' 
 #' stats <- get_stats(
 #'     dm = safetyData::adam_adsl,
 #'     ae = safetyData::adam_adae,
 #'     settings
 #' )
-#'
+#' 
 #' volcano_plot(stats)
 #'
 #' @import ggplot2
@@ -59,32 +59,32 @@ volcano_plot <- function(
     data$alpha[data$strata %in% highlights] <- 1
 
     p <- data %>%
-        ggplot(aes(.data$estimate, .data$logp)) +
-        geom_point(
-            aes(
+        ggplot2::ggplot(ggplot2::aes(.data$estimate, .data$logp)) +
+        ggplot2::geom_point(
+            ggplot2::aes(
                 size = .data$eventN_total,
                 fill = .data$diffexp,
                 alpha = alpha
             ),
             pch = 21
         ) +
-        scale_size_continuous(range = c(2, 12)) +
-        scale_fill_manual(values = fillcolors) +
+        ggplot2::scale_size_continuous(range = c(2, 12)) +
+        ggplot2::scale_fill_manual(values = fillcolors) +
 
         # adding cutoff lines
-        geom_hline(yintercept = -log10(opts$pcutoff), color = "grey30", linetype = "dashed") +
-        geom_vline(xintercept = opts$ecutoff, color = "grey30", linetype = "dashed") +
+        ggplot2::geom_hline(yintercept = -log10(opts$pcutoff), color = "grey30", linetype = "dashed") +
+        ggplot2::geom_vline(xintercept = opts$ecutoff, color = "grey30", linetype = "dashed") +
 
         # theming and labeling the plot
-        theme_bw() +
-        theme(legend.position = "none") +
-        scale_x_continuous(
-            expand = expansion(mult = c(0.05, 0.05))
+        ggplot2::theme_bw() +
+        ggplot2::theme(legend.position = "none") +
+        ggplot2::scale_x_continuous(
+            expand = ggplot2::expansion(mult = c(0.05, 0.05))
         ) +
-        theme(aspect.ratio = 1) +
+        ggplot2::theme(aspect.ratio = 1) +
 
         # Facet on comparison
-        facet_wrap(vars(.data$comp_grp))
+        ggplot2::facet_wrap(ggplot2::vars(.data$comp_grp))
 
     return(p)
 }

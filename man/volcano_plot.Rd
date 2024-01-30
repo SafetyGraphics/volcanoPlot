@@ -25,7 +25,7 @@ Creates a paneled volcano plot showing the distribution of Adverse events. Optio
 \examples{
 settings <- list(
     stratification_col = "AEBODSYS",
-    group_col = "ARM",
+    treatment_col = "ARM",
     reference_group = "Placebo",
     comparison_group = "Xanomeline High Dose",
     id_col = "USUBJID"

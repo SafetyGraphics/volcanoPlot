@@ -16,7 +16,7 @@ volcano_app(
 
 \item{ae}{`data.frame` Event-level data with one row per adverse event.}
 
-\item{settings}{`list` safetyGraphics settings}
+\item{settings}{`list` `{safetyGraphics}` settings}
 
 \item{runNow}{`logical` run app immediately?}
 }
