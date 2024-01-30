@@ -1,4 +1,4 @@
-#' Volcano Plot Module - Server
+#' Volcano Plot Module: Server
 #'
 #' Modularized server for AE volcano plot.
 #'

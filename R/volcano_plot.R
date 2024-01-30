@@ -1,4 +1,4 @@
-#' Create a volcano plot
+#' Volcano Plot
 #'
 #' Creates a paneled volcano plot showing the distribution of Adverse events. Options to highlight selected events and customize options are provided.
 #'

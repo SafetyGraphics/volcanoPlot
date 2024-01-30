@@ -2,7 +2,7 @@
 % Please edit documentation in R/volcano_server.R
 \name{volcano_server}
 \alias{volcano_server}
-\title{Volcano Plot Module - Server}
+\title{Volcano Plot Module: Server}
 \usage{
 volcano_server(input, output, session, params)
 }

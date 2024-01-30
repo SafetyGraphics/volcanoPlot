@@ -1,4 +1,4 @@
-#' Volcano Plot Module - UI
+#' Volcano Plot Module: UI
 #'
 #' Modularized user interface for AE Volcano plot
 #'
