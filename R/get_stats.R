@@ -137,12 +137,6 @@ get_stats <- function(
                     sink()
                     result
                 },
-                result = fmsb::riskdifference(
-                    a = .data$eventN_comparison,
-                    b = .data$eventN_ref,
-                    N1 = .data$N_comparison,
-                    N0 = .data$N_ref
-                ) %>% list(),
                 pvalue = .data$result$`p.value`,
                 estimate = .data$result$estimate,
                 ref_grp = settings$reference_group,
